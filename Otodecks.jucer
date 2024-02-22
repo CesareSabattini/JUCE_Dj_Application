@@ -4,11 +4,17 @@
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1">
   <MAINGROUP id="Qw6aS4" name="Otodecks">
     <GROUP id="{E5B562AE-E66A-DFEF-5B34-4F13FE12F160}" name="Source">
+      <FILE id="iQYAsL" name="DecksContainer.cpp" compile="1" resource="0"
+            file="Source/DecksContainer.cpp"/>
       <FILE id="L0cR4g" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
       <FILE id="o2AVOx" name="DjAudioPlayer.cpp" compile="1" resource="0"
             file="Source/DjAudioPlayer.cpp"/>
+      <FILE id="DbDMI6" name="DecksContainer.h" compile="0" resource="0"
+            file="Source/DecksContainer.h"/>
       <FILE id="dEYL5V" name="DjAudioPlayer.h" compile="0" resource="0" file="Source/DjAudioPlayer.h"/>
       <FILE id="kGHNcn" name="DeckGUI.cpp" compile="1" resource="0" file="Source/DeckGUI.cpp"/>
+      <FILE id="AFI0Up" name="AppStyle.cpp" compile="1" resource="0" file="Source/AppStyle.cpp"/>
+      <FILE id="O6R2KV" name="AppStyle.h" compile="0" resource="0" file="Source/AppStyle.h"/>
       <FILE id="zzmxTS" name="DeckGUI.h" compile="0" resource="0" file="Source/DeckGUI.h"/>
       <FILE id="YIbTwM" name="MainComponent.h" compile="0" resource="0" file="Source/MainComponent.h"/>
       <FILE id="jFHpor" name="MainComponent.cpp" compile="1" resource="0"

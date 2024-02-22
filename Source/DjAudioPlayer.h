@@ -6,6 +6,7 @@ class DjAudioPlayer  : public juce::AudioSource
 {
 public:
     DjAudioPlayer();
+
     ~DjAudioPlayer() override;
 
     void prepareToPlay(int samplesPerBlockExpected,

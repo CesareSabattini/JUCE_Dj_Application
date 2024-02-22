@@ -1,9 +1,11 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include"AppStyle.h"
 #include"DjAudioPlayer.h"
 
-class DeckGUI  : public juce::Component, juce::Button::Listener, juce::Slider::Listener
+
+class DeckGUI  : public juce::Component, juce::Button::Listener, juce::Slider::Listener, juce::TextEditor::Listener
 {
 public:
     DeckGUI(DjAudioPlayer* audioPlayer);
@@ -17,7 +19,7 @@ public:
 
 private:
 
-    DjAudioPlayer* player1;
+    DjAudioPlayer* djAudioPlayer;
 
     juce::ShapeButton playButton;
     juce::ShapeButton pauseButton;
@@ -28,6 +30,8 @@ private:
     juce::Slider volSlider;
     juce::Slider speedSlider;
     juce::Slider posSlider;
+
+    juce::TextEditor deckLabel;
 
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DeckGUI)
