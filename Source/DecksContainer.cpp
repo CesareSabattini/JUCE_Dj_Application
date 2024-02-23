@@ -17,18 +17,18 @@ DecksContainer::~DecksContainer()
 
 void DecksContainer::paint (juce::Graphics& g)
 {
-   
+    g.fillAll(juce::Colours::black);
    
 }
 
 void DecksContainer::resized()
 {
-    int x = 10; 
-    const int width = 420;
+    int borderGap = 10; 
+    int x = borderGap;
     const int height = 300;
     for (auto& deckGUI : deckGUIs)
     {
-        deckGUI->setBounds(x, 8, width, height); 
-        x += width + 10;
+        deckGUI->setBounds(x, borderGap, (getWidth()-2*borderGap)/2, (getHeight() - 140));
+        x += (getWidth() - 2 * borderGap) / 2 + borderGap;
     }
 }

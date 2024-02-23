@@ -5,13 +5,14 @@
 #include"DjAudioPlayer.h"
 
 
-class DeckGUI  : public juce::Component, juce::Button::Listener, juce::Slider::Listener, juce::TextEditor::Listener
+class DeckGUI  : public juce::Component, juce::Slider::Listener, juce::TextEditor::Listener, juce::Button::Listener,
+    private juce::Timer
 {
 public:
     DeckGUI(DjAudioPlayer* audioPlayer);
     ~DeckGUI() override;
-
-    void buttonClicked(juce::Button* button) override;
+    void buttonClicked(juce::Button* button);
+    void timerCallback() override;
     void sliderValueChanged(juce::Slider* slider) override;
 
     void paint (juce::Graphics&) override;
@@ -19,9 +20,13 @@ public:
 
 private:
 
-    DjAudioPlayer* djAudioPlayer;
 
-    juce::ShapeButton playButton;
+    DjAudioPlayer* djAudioPlayer;
+    
+    juce::Image disk;
+    float rotationAngle = 0.0f; // In radianti
+
+    juce::TextButton playButton;
     juce::ShapeButton pauseButton;
     juce::ShapeButton stopButton;
 

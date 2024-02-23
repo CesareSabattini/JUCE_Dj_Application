@@ -11,8 +11,12 @@ struct AppColours {
 
 class AppLAF : public juce::LookAndFeel_V4{
 public:
+    AppLAF();
     void drawRotarySlider(juce::Graphics& g, int x, int y, int width, int height, float sliderPos, float rotaryStartAngle, float rotaryEndAngle, juce::Slider& slider) override;
     void drawLabel(juce::Graphics& g, juce::Label& label) override;
+    void drawButtonBackground(juce::Graphics& g, juce::Button& button,
+        const juce::Colour& backgroundColour, bool isMouseOverButton,
+        bool isButtonDown) override;
 private:
-
+    juce::Image knobImage;
 };

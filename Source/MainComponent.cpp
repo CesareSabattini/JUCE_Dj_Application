@@ -20,7 +20,12 @@ MainComponent::MainComponent()
     viewPort.setScrollBarsShown(false, true, false, false);
     addAndMakeVisible(viewPort);
 
+    auto myTypeface = juce::Typeface::createSystemTypefaceFor(BinaryData::AntaRegular_ttf, BinaryData::AntaRegular_ttfSize);
+    juce::Font myFont(myTypeface);
+    myFont.setHeight(35);
     otodecksLabel.setText("Otodecks", juce::dontSendNotification);
+    otodecksLabel.setFont(myFont);
+    otodecksLabel.setColour(juce::Label::textColourId, juce::Colours::white);
     otodecksLabel.setJustificationType(juce::Justification::centred);
     addAndMakeVisible(otodecksLabel);
 
@@ -79,7 +84,7 @@ void shadeRect(juce::Graphics& g, juce::Rectangle<float> rect, juce::Colour colo
 
 void MainComponent::paint(juce::Graphics& g)
 {
-    juce::Colour rectangleColor = juce::Colour(210, 255, 255);
+    juce::Colour rectangleColor = juce::Colour(0, 76, 153);
     juce::Rectangle<float> upperRect(0, 0, getWidth(), 50);
     shadeRect(g, upperRect, rectangleColor);
 
@@ -88,8 +93,8 @@ void MainComponent::paint(juce::Graphics& g)
 void MainComponent::resized()
 {
     otodecksLabel.setBounds(getLocalBounds().removeFromTop(50));
-    viewPort.setBounds(10, 60, 530, 330);
-    container.setBounds(0, 60, 430*(deckGUIs.size()), 320);
+    viewPort.setBounds(0, 100, getWidth(), getHeight());
+    container.setBounds(0, 100,getWidth(), getHeight());
     addDeckButton.setBounds(550, viewPort.getBounds().getCentreY()-15, 30, 30);
 
 

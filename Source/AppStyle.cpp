@@ -15,69 +15,40 @@ const juce::Colour AppColours::internalColour = createGradientColour(
     10.0f 
 );
 
+AppLAF::AppLAF() {
+    
+    knobImage = juce::ImageFileFormat::loadFrom(juce::File("C:/Users/cesar/Desktop/knob.png"));
+    knobImage = knobImage.rescaled(120, 120);
+}
 
-void AppLAF::drawRotarySlider(juce::Graphics& g, int x, int y, int width, int height, float sliderPos, float rotaryStartAngle, float rotaryEndAngle, juce::Slider& slider) {
 
-    float diameter = juce::jmin(width, height) * 0.8f;
-    float radius = diameter / 2;
-    float centerX = x + width / 2;
-    float centerY = y + height / 2;
-    float angle = rotaryStartAngle + (sliderPos * (rotaryEndAngle - rotaryStartAngle));
-    float rotationOffset = -juce::MathConstants<float>::halfPi;
-
-    juce::Rectangle<float> area(centerX - radius, centerY - radius, diameter, diameter);
-
-    // Background gradient for outer wheel
-    juce::ColourGradient outerGradient(juce::Colours::grey.brighter(0.5), area.getCentreX(), area.getCentreY() - radius,
-        juce::Colours::grey.darker(0.2), area.getCentreX(), area.getCentreY() + radius, true);
-    g.setGradientFill(outerGradient);
-    g.fillEllipse(area);
-
-    // Inner wheel gradient
-    juce::ColourGradient innerGradient(juce::Colours::silver, centerX, centerY - radius * 0.6f,
-        juce::Colours::grey, centerX, centerY + radius * 0.6f, true);
-    juce::Rectangle<float> innerWheelArea = area.reduced(area.getWidth() * 0.2f);
-    g.setGradientFill(innerGradient);
-    g.fillEllipse(innerWheelArea);
-
-    // Blurred separation line
-    // Instead of drawing a direct line, let's enhance the gradient around the edge of the inner wheel
-    // to create a soft separation effect.
-    // This is a subtle artistic effect and doesn't involve direct drawing operations.
-
-    // Draw outer and inner wheel borders
-    g.setColour(juce::Colours::black);
-    g.drawEllipse(area, 1.0f);
-    g.drawEllipse(innerWheelArea, 1.0f);
-
-    // Ticks
-    juce::Path tick;
-    float stepAngle = (rotaryEndAngle - rotaryStartAngle) / 100.0f;
-    for (int i = 0; i <= 100; ++i) {
-        float tickAngle = rotaryStartAngle + i * stepAngle;
-        float tickRadius = radius * 0.9f;
-        float x1 = centerX + tickRadius * std::cos(tickAngle + rotationOffset);
-        float y1 = centerY + tickRadius * std::sin(tickAngle + rotationOffset);
-        float x2 = centerX + radius * std::cos(tickAngle + rotationOffset);
-        float y2 = centerY + radius * std::sin(tickAngle + rotationOffset);
-        tick.clear();
-        tick.startNewSubPath(x1, y1);
-        tick.lineTo(x2, y2);
-        // Make every 10th tick more prominent
-        float lineThickness = (i % 10 == 0) ? 2.0f : 1.0f;
-        g.strokePath(tick, juce::PathStrokeType(lineThickness));
+void AppLAF::drawRotarySlider(juce::Graphics& g, int x, int y, int width, int height,
+    float sliderPosProportional, const float rotaryStartAngle,
+    const float rotaryEndAngle, juce::Slider& slider) 
+{
+    if (!knobImage.isValid()) {
+        return; // Assicurati che l'immagine sia valida
     }
 
-    // Replace thumb with red line
-    g.setColour(juce::Colours::red);
-    float innerCircleRadius = radius * 0.7f; // Adjust this value to match the inner circle radius
-    float outerCircleX = centerX + radius * std::cos(angle + rotationOffset);
-    float outerCircleY = centerY + radius * std::sin(angle + rotationOffset);
-    float innerCircleX = centerX + innerCircleRadius * std::cos(angle + rotationOffset);
-    float innerCircleY = centerY + innerCircleRadius * std::sin(angle + rotationOffset);
-    g.drawLine(innerCircleX, innerCircleY,
-        outerCircleX, outerCircleY, 2.0f); // Red line as the thumb
+    auto radius = juce::jmin(width / 2, height / 2);
+    auto centreX = x + width * 0.5f;
+    auto centreY = y + height * 0.5f;
+    auto rx = centreX - radius;
+    auto ry = centreY - radius;
+    auto rw = radius * 2.0f;
+    auto rh = radius * 2.0f;
+
+    // Calcola l'angolo del knob in base al valore attuale dello slider
+    const float angle = rotaryStartAngle + sliderPosProportional * (rotaryEndAngle - rotaryStartAngle);
+
+    // Prepara l'immagine per la rotazione attorno al suo centro
+    juce::AffineTransform transform = juce::AffineTransform::rotation(angle, knobImage.getWidth() / 2.0f, knobImage.getHeight() / 2.0f)
+        .translated(centreX - knobImage.getWidth() / 2.0f,
+            centreY - knobImage.getHeight() / 2.0f);
+
+    g.drawImageTransformed(knobImage, transform, false);
 }
+
 
 
 void AppLAF::drawLabel(juce::Graphics& g, juce::Label& label) {
@@ -104,4 +75,38 @@ void AppLAF::drawLabel(juce::Graphics& g, juce::Label& label) {
     g.drawFittedText(label.getText(), textArea.toType<int>(), label.getJustificationType(),
         juce::jmax(1, (int)(textArea.getHeight() / g.getCurrentFont().getHeight())),
         label.getMinimumHorizontalScale()); // Disegna il testo adattandolo all'area disponibile
+}
+
+void AppLAF::drawButtonBackground(juce::Graphics& g, juce::Button& button,
+    const juce::Colour& backgroundColour, bool isMouseOverButton,
+    bool isButtonDown) {
+    auto buttonBounds = button.getLocalBounds().toFloat();
+    auto cornerRadius = 6.0f; // Raggio degli angoli arrotondati del pulsante
+
+    // Scegli il colore del pulsante in base allo stato
+    auto baseColour = isButtonDown ? juce::Colours::darkgrey.darker() : juce::Colours::darkgrey;
+    g.setColour(baseColour);
+
+    // Disegna il fondo del pulsante con angoli arrotondati
+    g.fillRoundedRectangle(buttonBounds, cornerRadius);
+
+    // Aggiungi un effetto di luce per dare l'impressione che il pulsante sporga
+    if (!isButtonDown) {
+        juce::ColourGradient gradient(juce::Colours::white.withAlpha(0.3f), buttonBounds.getX(), buttonBounds.getY(),
+            juce::Colours::transparentBlack, buttonBounds.getX(), buttonBounds.getBottom(), false);
+        g.setGradientFill(gradient);
+        g.fillRoundedRectangle(buttonBounds, cornerRadius);
+    }
+
+    // Aggiungi un bordo scuro per definire meglio il pulsante
+    g.setColour(juce::Colours::black.withAlpha(0.5f));
+    g.drawRoundedRectangle(buttonBounds.reduced(1.0f), cornerRadius, 1.0f); // L'ultimo parametro è lo spessore del bordo
+
+    // Gestisci manualmente il disegno del testo se il pulsante contiene del testo
+    if (button.getButtonText().isNotEmpty()) {
+      
+
+        g.drawText(button.getButtonText(), button.getLocalBounds(),
+            juce::Justification::centred, true);
+    }
 }

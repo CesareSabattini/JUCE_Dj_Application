@@ -3,15 +3,24 @@
 
 
 //==============================================================================
-DeckGUI::DeckGUI(DjAudioPlayer* audioPlayer) : djAudioPlayer{ audioPlayer }, playButton("playButton", juce::Colours::forestgreen, juce::Colours::lawngreen, juce::Colours::darkolivegreen),
+DeckGUI::DeckGUI(DjAudioPlayer* audioPlayer) : djAudioPlayer{ audioPlayer },// playButton("playButton", juce::Colours::forestgreen, juce::Colours::lawngreen, juce::Colours::darkolivegreen),
 pauseButton("pauseButton", juce::Colours::grey, juce::Colours::darkgrey, juce::Colours::black),
 stopButton("stopButton", juce::Colours::indianred, juce::Colours::mediumvioletred, juce::Colours::darkred)
 {
-    juce::Path trianglePath;
-    trianglePath.addTriangle(0, 0, 40, 25, 0, 50);
-    playButton.setShape(trianglePath, true, true, true);
-    playButton.onClick = [this] {};
+    //juce::Path trianglePath;
+    //trianglePath.addTriangle(0, 0, 40, 25, 0, 50);
+    //playButton.setShape(trianglePath, true, true, true);
+
+        juce::File imageFile("C:/Users/cesar/Desktop/disk.png");     
+       disk= juce::ImageFileFormat::loadFrom(imageFile);
+      disk= disk.rescaled(disk.getWidth() / 4, disk.getHeight() / 4);
+      startTimerHz(60);
+
+      playButton.setLookAndFeel(&appLAF);
     addAndMakeVisible(playButton);
+    playButton.addListener(this);
+  
+
 
     juce::Path doubleRectPath;
     doubleRectPath.addRectangle(0, 0, 10, 30);
@@ -28,6 +37,13 @@ stopButton("stopButton", juce::Colours::indianred, juce::Colours::mediumvioletre
 
     loadButton.setButtonText("Load");
     addAndMakeVisible(loadButton);
+    loadButton.onClick = [this] {
+        DBG("CLICKED");
+        djAudioPlayer->loadURL();
+    };
+    loadButton.setLookAndFeel(&appLAF);
+
+
 
 
     addAndMakeVisible(volSlider);
@@ -57,25 +73,37 @@ stopButton("stopButton", juce::Colours::indianred, juce::Colours::mediumvioletre
     deckLabel.setLookAndFeel(&appLAF);
 }
 
+void DeckGUI::buttonClicked(juce::Button* button)
+{
+    if (button == &playButton)
+    {
+        DBG("Play button clicked");
+        std::cout << "Play button was clicked " << std::endl;
+        djAudioPlayer->start();
+    }
+    if (button == &stopButton)
+    {
+        std::cout << "Stop button was clicked " << std::endl;
+        djAudioPlayer->stop();
+
+    }
+
+    // if (button == &loadButton)
+    // {
+    //     FileChooser chooser{"Select a file..."};
+    //     if (chooser.browseForFileToOpen())
+    //     {
+    //         player->loadURL(URL{chooser.getResult()});
+    //         waveformDisplay.loadURL(URL{chooser.getResult()});
+
+    //     }
+
+}
+
 DeckGUI::~DeckGUI()
 {
 }
 
-void DeckGUI::buttonClicked(juce::Button* button) {
-    if (button == &playButton) {
-        djAudioPlayer->start();
-    }
-    if (button == &stopButton) {
-        djAudioPlayer->stop();
-    }
-    if (button == &loadButton) {
-        djAudioPlayer->loadURL();
-        // juce::FileChooser chooser{ "Select a file..." };
-        // if (chooser.browseForFileToOpen()) {
-            // djAudioPlayer->loadURL(juce::URL{ chooser.getResult() });
-        // }
-    }
-}
 
 void DeckGUI::sliderValueChanged(juce::Slider* slider) {
 
@@ -96,27 +124,50 @@ void DeckGUI::sliderValueChanged(juce::Slider* slider) {
 
 void DeckGUI::paint(juce::Graphics& g)
 {
-
     auto bounds = getLocalBounds().toFloat();
     auto cornerSize = 10.0f; // Raggio degli angoli arrotondati
 
-    // Definizione del gradiente
-    juce::ColourGradient gradient(juce::Colour(212, 213, 213), bounds.getTopLeft(),
-        juce::Colour(247, 248, 248), bounds.getBottomRight(), false);
+    // Definizione del gradiente e disegno dello sfondo
+    juce::ColourGradient gradient(juce::Colour(51, 153, 255), bounds.getTopLeft(),
+        juce::Colour(204, 153, 255), bounds.getBottomRight(), false);
     g.setGradientFill(gradient);
-
-    // Disegna lo sfondo con angoli arrotondati
     g.fillRoundedRectangle(bounds, cornerSize);
-
-    // Disegna il bordo
     g.setColour(juce::Colours::black);
-    g.drawRoundedRectangle(bounds.reduced(0.5f), cornerSize,3.0f);
+    g.drawRoundedRectangle(bounds.reduced(0.5f), cornerSize, 3.0f);
 
-    g.setColour(juce::Colours::black);
-    g.drawRoundedRectangle(sliderContainerBounds.toFloat().reduced(0.5f), cornerSize, 3.0f); // Spessore del bordo
+    // Disegno del bordo attorno al giradischi
+    g.drawRoundedRectangle(sliderContainerBounds.toFloat().reduced(0.5f), cornerSize, 3.0f);
 
+    if (!disk.isNull()) {
+        // Calcola il punto centrale esatto dell'immagine del disco per la rotazione
+        auto diskCentreX = getBounds().getCentreX();
+        auto diskCentreY = getBounds().getCentreY();
+        auto imageCentre = juce::Point<int>(diskCentreX, diskCentreY);
 
+        // Applica una trasformazione per ruotare l'immagine attorno al suo centro
+        g.addTransform(juce::AffineTransform::rotation(rotationAngle, imageCentre.getX(), imageCentre.getY()));
+        g.drawImageAt(disk, diskCentreX - disk.getWidth() / 2, diskCentreY - disk.getHeight() / 2);
+
+        // Resetta la trasformazione per eventuali ulteriori operazioni di disegno
+        
+    }
 }
+
+void DeckGUI::timerCallback() {
+    const float rotationSpeed = 2*juce::MathConstants<float>::twoPi; // Radianti al secondo
+    const float frameTime = 1.0f / 60.0f; // Tempo per frame a 60 FPS
+
+    // Aggiorna l'angolo di rotazione
+    rotationAngle += rotationSpeed * frameTime;
+
+    // Assicurati che l'angolo rimanga valido
+    if (rotationAngle >= juce::MathConstants<float>::twoPi)
+        rotationAngle -= juce::MathConstants<float>::twoPi;
+
+    // Richiedi il ridisegno del componente
+    repaint();
+}
+
 
 void DeckGUI::resized()
 {

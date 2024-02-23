@@ -4,7 +4,8 @@
 
 DjAudioPlayer::DjAudioPlayer()
 {
-
+	formatManager.registerBasicFormats();
+	transportSource.addChangeListener(this);
 }
 
 DjAudioPlayer::~DjAudioPlayer()
@@ -12,10 +13,12 @@ DjAudioPlayer::~DjAudioPlayer()
 }
 
 
+
+
 void DjAudioPlayer::prepareToPlay(int samplesPerBlockExpected,
 	double sampleRate)
 {
-	formatManager.registerBasicFormats();
+	
 	transportSource.prepareToPlay(samplesPerBlockExpected,
 		sampleRate);
 	resampleSource.prepareToPlay(samplesPerBlockExpected,
@@ -24,13 +27,8 @@ void DjAudioPlayer::prepareToPlay(int samplesPerBlockExpected,
 
 void DjAudioPlayer::getNextAudioBlock(const juce::AudioSourceChannelInfo&
 	bufferToFill) {
-	if (readerSource.get() == nullptr)
-	{
-		bufferToFill.clearActiveBufferRegion();
-		return;
-	}
+
     transportSource.getNextAudioBlock(bufferToFill);
-	resampleSource.getNextAudioBlock(bufferToFill);
 }
 
 void DjAudioPlayer::releaseResources()
@@ -41,7 +39,7 @@ void DjAudioPlayer::releaseResources()
 
 void DjAudioPlayer::loadURL()
 {
-	std::unique_ptr<juce::FileChooser> chooser = std::make_unique<juce::FileChooser>("Select a Wave file to play...",
+	 chooser = std::make_unique<juce::FileChooser>("Select a Wave file to play...",
 		juce::File{},
 		"*.wav");                    
 	auto chooserFlags = juce::FileBrowserComponent::openMode
@@ -49,10 +47,13 @@ void DjAudioPlayer::loadURL()
 
 	chooser->launchAsync(chooserFlags, [this](const juce::FileChooser& fc)     
 		{
+
+	
 			auto file = fc.getResult();
 
 			if (file != juce::File{})                                               
 			{
+				DBG("File selected: " << file.getFullPathName());
 				auto* reader = formatManager.createReaderFor(file);           
 
 				if (reader != nullptr)
@@ -62,6 +63,9 @@ void DjAudioPlayer::loadURL()
 					                                    
 					readerSource.reset(newSource.release());
 				}
+			}
+			else {
+				DBG("No file was selected.");
 			}
 		});
 }
@@ -108,10 +112,20 @@ void DjAudioPlayer::setSpeed(double ratio)
 
 void DjAudioPlayer::start(void)
  {
-	transportSource.start();
+	if (!transportSource.isPlaying()) {
+		DBG("Starting playback");
+		transportSource.start();
+	}
+	else {
+		DBG("TransportSource already playing");
+	}
 	}
 
  void DjAudioPlayer::stop(void)
  {
 	 transportSource.stop();
 	}
+
+  void DjAudioPlayer::changeListenerCallback(juce::ChangeBroadcaster* source) {
+	 
+ }

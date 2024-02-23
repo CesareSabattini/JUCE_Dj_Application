@@ -2,13 +2,14 @@
 
 #include <JuceHeader.h>
 
-class DjAudioPlayer  : public juce::AudioSource
+class DjAudioPlayer  : public juce::AudioSource, juce::ChangeListener
 {
 public:
     DjAudioPlayer();
 
+    
     ~DjAudioPlayer() override;
-
+    void changeListenerCallback(juce::ChangeBroadcaster* source);
     void prepareToPlay(int samplesPerBlockExpected,
         double sampleRate) override;
     void getNextAudioBlock(const juce::AudioSourceChannelInfo&
@@ -30,6 +31,7 @@ private:
 
     juce::ResamplingAudioSource resampleSource{ &transportSource,
 false, 2 };
+    std::unique_ptr<juce::FileChooser> chooser;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DjAudioPlayer)
 };
