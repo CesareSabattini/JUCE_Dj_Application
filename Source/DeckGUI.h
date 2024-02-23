@@ -31,8 +31,11 @@ private:
     juce::Slider speedSlider;
     juce::Slider posSlider;
 
-    juce::TextEditor deckLabel;
+    juce::Rectangle<int> sliderContainerBounds;
 
+    juce::Label deckLabel;
+
+    AppLAF appLAF;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DeckGUI)
 };

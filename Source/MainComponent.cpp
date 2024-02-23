@@ -24,11 +24,12 @@ MainComponent::MainComponent()
     otodecksLabel.setJustificationType(juce::Justification::centred);
     addAndMakeVisible(otodecksLabel);
 
-    addDeckButton.setButtonText("Add Deck");
+    addDeckButton.setButtonText("+");
     addDeckButton.onClick = [this] {
         addDeck();
     };
     addAndMakeVisible(addDeckButton);
+    resized();
 
 }
 
@@ -62,17 +63,34 @@ void MainComponent::releaseResources()
 }
 
 
+void shadeRect(juce::Graphics& g, juce::Rectangle<float> rect, juce::Colour color) {
+    juce::Colour shadowColor3 = color.darker(0.8);
+    g.setColour(shadowColor3);
+    g.fillRect(rect.reduced(-6));
+    juce::Colour shadowColor2 = color.darker(0.5);
+    g.setColour(shadowColor2);
+    g.fillRect(rect.reduced(-4));
+    juce::Colour shadowColor1 = color.darker(0.2);
+    g.setColour(shadowColor1);
+    g.fillRect(rect.reduced(-2));
+    g.setColour(color);
+    g.fillRect(rect);
+}
+
 void MainComponent::paint(juce::Graphics& g)
 {
+    juce::Colour rectangleColor = juce::Colour(210, 255, 255);
+    juce::Rectangle<float> upperRect(0, 0, getWidth(), 50);
+    shadeRect(g, upperRect, rectangleColor);
 
 }
 
 void MainComponent::resized()
 {
     otodecksLabel.setBounds(getLocalBounds().removeFromTop(50));
-    addDeckButton.setBounds(10, 350, 100, 50);
-    viewPort.setBounds(20, 50, 530, 300);
-    container.setBounds(0, 50, getParentWidth(), 300);
+    viewPort.setBounds(10, 60, 530, 330);
+    container.setBounds(0, 60, 430*(deckGUIs.size()), 320);
+    addDeckButton.setBounds(550, viewPort.getBounds().getCentreY()-15, 30, 30);
 
 
 }
@@ -82,8 +100,6 @@ void MainComponent::addDeck() {
     players.push_back(std::make_unique<DjAudioPlayer>());
     deckGUIs.push_back(std::make_unique<DeckGUI>(players[players.size()-1].get()));
     mixer.addInputSource(players[players.size() - 1].get(), true);
-   
-
-        container.addDeckGUI(std::move(deckGUIs[deckGUIs.size()-1]));
-    
+    container.addDeckGUI(std::move(deckGUIs[deckGUIs.size()-1]));
+    resized();
 }
