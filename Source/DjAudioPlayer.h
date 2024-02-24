@@ -22,15 +22,15 @@ public:
     void setPositionRelative(double pos);
     void start(void);
     void stop(void);
+    juce::AudioThumbnail& getThumbnail() { return thumbnail; }
  
 private:
 
     juce::AudioFormatManager formatManager;
     std::unique_ptr<juce::AudioFormatReaderSource> readerSource;
     juce::AudioTransportSource transportSource;
-
-    juce::ResamplingAudioSource resampleSource{ &transportSource,
-false, 2 };
+    juce::AudioThumbnail thumbnail;
+    juce::AudioThumbnailCache thumbnailCache;
     std::unique_ptr<juce::FileChooser> chooser;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DjAudioPlayer)

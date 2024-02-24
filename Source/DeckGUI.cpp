@@ -13,17 +13,19 @@ DeckGUI::DeckGUI(DjAudioPlayer* audioPlayer) : djAudioPlayer{ audioPlayer }
       startTimerHz(60);
 
      
-  
+
+      playButton.setLookAndFeel(&appLAF);
+      playButton.setButtonText("PLAY");
+      playButton.onClick = [this] {
+          DBG("PLAY BUTTON HAS BEEN CLICKED");
+          djAudioPlayer->start();
+      };
+      addAndMakeVisible(playButton);  
 
     pauseButton.setLookAndFeel(&appLAF);
     pauseButton.setButtonText("PAUSE");
     pauseButton.onClick = [this] {};
     addAndMakeVisible(pauseButton);
-
-    playButton.setLookAndFeel(&appLAF);
-    playButton.setButtonText("PLAY");
-    playButton.onClick = [this] {};
-    addAndMakeVisible(playButton);
 
     stopButton.setLookAndFeel(&appLAF);
     stopButton.setButtonText("STOP");
@@ -131,6 +133,7 @@ void DeckGUI::paint(juce::Graphics& g)
     g.setColour(juce::Colours::black);
 
     if (!disk.isNull()) {
+        g.saveState();
         auto diskCentreX = 250;
         auto diskCentreY = bounds.getCentreY();
         auto imageCentre = juce::Point<int>(diskCentreX, diskCentreY);
@@ -178,7 +181,20 @@ void DeckGUI::paint(juce::Graphics& g)
 
         // Disegno del disco
         g.drawImageAt(disk, diskCentreX - disk.getWidth() / 2, diskCentreY - disk.getHeight() / 2);
+        g.restoreState();
+
     }
+
+    auto thumbnailBounds = juce::Rectangle<int>(0,0,getParentWidth(), 100); // Regola questo per adattarlo al tuo layout
+    auto& thumbnail = djAudioPlayer->getThumbnail();
+    if (thumbnail.getNumChannels() == 0)
+        return; // Nessuna thumbnail da disegnare
+
+    g.setColour(juce::Colours::lightgrey);
+    g.fillRect(thumbnailBounds); // Sfondo per la thumbnail
+
+    g.setColour(juce::Colours::darkblue);
+    thumbnail.drawChannel(g, thumbnailBounds, 0, thumbnail.getTotalLength(), 0, 1.0f);
 }
 
 

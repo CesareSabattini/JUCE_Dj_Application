@@ -12,6 +12,7 @@ MainComponent::MainComponent()
     deckGUIs.push_back(std::make_unique<DeckGUI>(players[1].get()));
 
     mixer.addInputSource(players[0].get(), true);
+    mixer.addInputSource(players[1].get(), true);
     for (auto& deckGUI : deckGUIs)
     {
 
@@ -42,23 +43,23 @@ MainComponent::MainComponent()
 
 MainComponent::~MainComponent()
 {
+    mixer.releaseResources();
     shutdownAudio();
+
 }
 
 void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate)
 {
-    for (int i = 0; i < players.size(); i++) {
-        players[i]->prepareToPlay(samplesPerBlockExpected,
+    
+        mixer.prepareToPlay(samplesPerBlockExpected,
             sampleRate);
-    }
+    
 
 }
 
 void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill)
 {
-    for (int i = 0; i < players.size(); i++) {
-        players[i]->getNextAudioBlock(bufferToFill);
-    }
+    mixer.getNextAudioBlock(bufferToFill);
 
 }
 
