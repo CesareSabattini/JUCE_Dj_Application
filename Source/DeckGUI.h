@@ -3,6 +3,7 @@
 #include <JuceHeader.h>
 #include"AppStyle.h"
 #include"DjAudioPlayer.h"
+#include"Playlist.h"
 
 
 class DeckGUI  : public juce::Component, juce::Slider::Listener, juce::TextEditor::Listener, juce::Button::Listener,
@@ -14,6 +15,7 @@ public:
     void buttonClicked(juce::Button* button);
     void timerCallback() override;
     void sliderValueChanged(juce::Slider* slider) override;
+    void showPlaylist();
 
     void paint (juce::Graphics&) override;
     void resized() override;
@@ -22,10 +24,14 @@ private:
 
 
     DjAudioPlayer* djAudioPlayer;
+
+    std::unique_ptr<Playlist> playlist;
     
     juce::Image disk;
+    juce::Image arm;
     float rotationAngle = 0.0f; // In radianti
-
+    bool isPlaying = false;
+   
     juce::TextButton playButton;
     juce::TextButton pauseButton;
     juce::TextButton stopButton;

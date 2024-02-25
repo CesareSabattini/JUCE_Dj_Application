@@ -165,3 +165,18 @@ void AppLAF::drawLinearSlider(juce::Graphics& g, int x, int y, int width, int he
         g.fillRect(knob);
     }
 }
+
+
+void AppLAF::drawTableHeaderBackground(juce::Graphics& g, juce::TableHeaderComponent& header) {
+    auto r = header.getLocalBounds();
+
+    // Sfondo metallico/argenteo
+    juce::ColourGradient gradient(juce::Colours::silver, 0, 0, juce::Colours::grey, header.getWidth(), header.getHeight(), false);
+   
+    g.setGradientFill(gradient);
+    g.fillRect(r);
+
+    // Linee decorative dorate
+    g.setColour(juce::Colours::gold);
+    g.drawRect(r);
+}

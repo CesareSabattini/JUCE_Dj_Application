@@ -18,9 +18,11 @@ public:
         const juce::Colour& backgroundColour, bool isMouseOverButton,
         bool isButtonDown) override;
 
-    void AppLAF::drawLinearSlider(juce::Graphics& g, int x, int y, int width, int height,
+    void drawLinearSlider(juce::Graphics& g, int x, int y, int width, int height,
         float sliderPos, float minSliderPos, float maxSliderPos,
         const juce::Slider::SliderStyle style, juce::Slider& slider) override;
+    void drawTableHeaderBackground(juce::Graphics& g, juce::TableHeaderComponent& header) override;
+
 private:
     juce::Image knobImage;
 };

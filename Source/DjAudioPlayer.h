@@ -21,14 +21,19 @@ public:
     void setPosition(double posInSecs);
     void setPositionRelative(double pos);
     void start(void);
+    void pause(void);
     void stop(void);
+    juce::AudioTransportSource* getTransportSource();
     juce::AudioThumbnail& getThumbnail() { return thumbnail; }
+    void loadFileAndPlay(const juce::File& file);
  
 private:
 
     juce::AudioFormatManager formatManager;
     std::unique_ptr<juce::AudioFormatReaderSource> readerSource;
     juce::AudioTransportSource transportSource;
+    juce::ResamplingAudioSource resampleSource{ &transportSource,
+false,2};
     juce::AudioThumbnail thumbnail;
     juce::AudioThumbnailCache thumbnailCache;
     std::unique_ptr<juce::FileChooser> chooser;

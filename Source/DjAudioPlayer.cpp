@@ -24,43 +24,57 @@ void DjAudioPlayer::prepareToPlay(int samplesPerBlockExpected,
 	DBG("Preparing to play. Sample rate: " << sampleRate << ", Samples per block: " << samplesPerBlockExpected);
 	jassert(sampleRate > 0); // Aggiunge un assert per verificare che sampleRate sia positivo
 	transportSource.prepareToPlay(samplesPerBlockExpected, sampleRate);
+	resampleSource.prepareToPlay(samplesPerBlockExpected, sampleRate);
 }
 
 void DjAudioPlayer::getNextAudioBlock(const juce::AudioSourceChannelInfo&
 	bufferToFill) {
 
-    transportSource.getNextAudioBlock(bufferToFill);
+	resampleSource.getNextAudioBlock(bufferToFill);
 }
 
 void DjAudioPlayer::releaseResources()
 {
 	transportSource.releaseResources();
+	resampleSource.releaseResources();
 	
 }
+
+
 void DjAudioPlayer::loadURL()
 {
 	chooser = std::make_unique<juce::FileChooser>("Select a Wave file to play...",
-		juce::File{},
-		"*.wav");
-	auto chooserFlags = juce::FileBrowserComponent::openMode
-		| juce::FileBrowserComponent::canSelectFiles;
+		juce::File{}, "*.wav");
+	auto chooserFlags = juce::FileBrowserComponent::openMode | juce::FileBrowserComponent::canSelectFiles;
 
 	chooser->launchAsync(chooserFlags, [this](const juce::FileChooser& fc)
 		{
 			auto file = fc.getResult();
 			if (file != juce::File{}) {
-				auto* reader = formatManager.createReaderFor(file);
+				// Costruisci il percorso della directory "Playlist" nella directory del progetto
+				auto playlistDir = juce::File::getCurrentWorkingDirectory().getChildFile("Playlist");
+				if (!playlistDir.exists()) {
+					playlistDir.createDirectory(); // Crea la directory se non esiste
+				}
+
+				// Costruisci il percorso del file di destinazione all'interno della directory "Playlist"
+				auto destinationFile = playlistDir.getChildFile(file.getFileName());
+
+				// Copia il file selezionato nella directory "Playlist", sovrascrivendo se esiste
+				file.copyFileTo(destinationFile);
+
+				// Utilizza il file nella directory "Playlist" da ora in poi
+				auto* reader = formatManager.createReaderFor(destinationFile);
 				if (reader != nullptr) {
 					auto newSource = std::make_unique<juce::AudioFormatReaderSource>(reader, true);
 					transportSource.setSource(newSource.get(), 0, nullptr, reader->sampleRate);
 					readerSource.reset(newSource.release());
-					thumbnail.setSource(new juce::FileInputSource(file));
+					thumbnail.setSource(new juce::FileInputSource(destinationFile));
 				}
 			}
 		});
 }
 
-	
 	
 
 
@@ -86,7 +100,7 @@ void DjAudioPlayer::setSpeed(double ratio)
 		
 	}
 	else {
-
+		resampleSource.setResamplingRatio(ratio);
 	}
 }
 
@@ -103,6 +117,7 @@ void DjAudioPlayer::setSpeed(double ratio)
 	 else {
 		 double posInSecs = transportSource.getLengthInSeconds() * pos;
 		 setPosition(posInSecs);
+		 transportSource.stop();
 	 }
 
  }
@@ -121,8 +136,34 @@ void DjAudioPlayer::start(void)
  void DjAudioPlayer::stop(void)
  {
 	 transportSource.stop();
+	 transportSource.setPosition(0.0);
 	}
+ void DjAudioPlayer::pause(void)
+ {
+	 transportSource.stop();
+ }
 
   void DjAudioPlayer::changeListenerCallback(juce::ChangeBroadcaster* source) {
 	 
  }
+
+
+  juce::AudioTransportSource* DjAudioPlayer::getTransportSource() {
+	  return &transportSource;
+  }
+
+  void DjAudioPlayer::loadFileAndPlay(const juce::File& file) {
+	  auto* reader = formatManager.createReaderFor(file);
+
+	  if (reader != nullptr) {
+		  auto newSource = std::make_unique<juce::AudioFormatReaderSource>(reader, true);
+		  transportSource.setSource(newSource.get(), 0, nullptr, reader->sampleRate);
+		  readerSource.reset(newSource.release());
+		  thumbnail.setSource(new juce::FileInputSource(file));
+
+		 
+	  }
+	  else {
+		  juce::Logger::writeToLog("Failed to create audio format reader.");
+	  }
+  }
