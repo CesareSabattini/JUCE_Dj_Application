@@ -23,6 +23,9 @@ public:
         const juce::Slider::SliderStyle style, juce::Slider& slider) override;
     void drawTableHeaderBackground(juce::Graphics& g, juce::TableHeaderComponent& header) override;
 
+    void drawButtonText(juce::Graphics& g, juce::TextButton& button, bool shouldDrawButtonAsHighlighted, bool shouldDrawButtonAsDown) override;
+
 private:
     juce::Image knobImage;
+    juce::Font antaRegular;
 };

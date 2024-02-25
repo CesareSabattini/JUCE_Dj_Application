@@ -36,8 +36,28 @@ MainComponent::MainComponent()
     otodecksLabel.setJustificationType(juce::Justification::centred);
     addAndMakeVisible(otodecksLabel);
 
+    syncButton.setButtonText("Sync");
+    addAndMakeVisible(syncButton);
+    syncButton.setLookAndFeel(&appLAF);
 
     resized();
+    
+    addAndMakeVisible(effectsViewport);
+    effectsViewport.setViewedComponent(&commonEffects, false);
+    // Dimensioni di esempio
+
+    addAndMakeVisible(leftButton);
+    leftButton.setButtonText("Sinistra");
+    leftButton.onClick = [this] {
+        effectsViewport.setViewPosition(effectsViewport.getViewPositionX() - 300, effectsViewport.getViewPositionY());
+    };
+
+    addAndMakeVisible(rightButton);
+    rightButton.setButtonText("Destra");
+    rightButton.onClick = [this] {
+        effectsViewport.setViewPosition(effectsViewport.getViewPositionX() + 300, effectsViewport.getViewPositionY());
+    };
+  
 
 }
 
@@ -87,18 +107,20 @@ void shadeRect(juce::Graphics& g, juce::Rectangle<float> rect, juce::Colour colo
 
 void MainComponent::paint(juce::Graphics& g)
 {
-    juce::Colour rectangleColor = juce::Colours::darkgrey;
-    juce::Rectangle<float> upperRect(0, 0, getWidth(), 90);
-    shadeRect(g, upperRect, rectangleColor);
+ 
 
 }
 
 void MainComponent::resized()
 {
-    otodecksLabel.setBounds(getLocalBounds().removeFromTop(100));
-    container.setBounds(0, 100,getWidth(), getHeight()-100);
-
-
+    const int middleGap = 30;
+    otodecksLabel.setBounds((getWidth()-250)/2, 0, 250,100);
+    container.setBounds(0, 0,getWidth(), getHeight());
+    syncButton.setBounds((getWidth() - 250) / 2 + middleGap, 100 + middleGap, 250 - 2 * middleGap, 100);
+    effectsViewport.setBounds((getWidth() - 250) / 2, 310, 250, getHeight() - 310);
+    commonEffects.setSize(effectsViewport.getWidth()*2, effectsViewport.getHeight());
+    leftButton.setBounds((getWidth() - 250) / 2, 410, 50, 50);
+    rightButton.setBounds((getWidth()) / 2, 410, 50, 50);
 }
 
 

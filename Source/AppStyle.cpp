@@ -19,6 +19,8 @@ AppLAF::AppLAF() {
     
     knobImage = juce::ImageFileFormat::loadFrom(juce::File("C:/Users/cesar/Desktop/knob.png"));
     knobImage = knobImage.rescaled(120, 120);
+    juce::Typeface::Ptr tface = juce::Typeface::createSystemTypefaceFor(BinaryData::AntaRegular_ttf, BinaryData::AntaRegular_ttfSize);
+    antaRegular = juce::Font(tface);
 }
 
 void AppLAF::drawRotarySlider(juce::Graphics& g, int x, int y, int width, int height,
@@ -97,7 +99,7 @@ void AppLAF::drawLabel(juce::Graphics& g, juce::Label& label) {
     g.setFont(label.getFont()); // Usa il font definito nella Label
 
     auto textArea = bounds.reduced(4); // Riduci leggermente l'area del testo per il padding
-    g.drawFittedText(label.getText(), textArea.toType<int>(), label.getJustificationType(),
+    g.drawFittedText(label.getText(), textArea.toType<int>(), juce::Justification::centred,
         juce::jmax(1, (int)(textArea.getHeight() / g.getCurrentFont().getHeight())),
         label.getMinimumHorizontalScale()); // Disegna il testo adattandolo all'area disponibile
 }
@@ -164,6 +166,29 @@ void AppLAF::drawLinearSlider(juce::Graphics& g, int x, int y, int width, int he
         juce::Rectangle<float> knob(x + (width - knobWidth) / 2, sliderPos - (knobHeight / 2), knobWidth, knobHeight);
         g.fillRect(knob);
     }
+
+
+    if (style == juce::Slider::LinearHorizontal) {
+        g.setColour(juce::Colours::darkgrey);
+        g.fillRect(x, y + height / 2 - 2, width, 4); // Track orizzontale
+
+        // Segni di demarcazione e valori
+        g.setColour(juce::Colours::gold); // Colore dorato per i dettagli
+        const int numMarks = 10;
+        for (int i = 0; i <= numMarks; ++i) {
+            float pos = x + (i * width / numMarks);
+            g.drawVerticalLine(pos, y + height / 2 - 5, y + height / 2 + 5);
+
+          
+        }
+
+        // Disegna il cursore come un rettangolo (knob)
+        const int knobWidth = 10; // Altezza del knob
+        const int knobHeight = 20; // Larghezza del knob, maggiore per visibilità orizzontale
+        g.setColour(juce::Colours::grey);
+        juce::Rectangle<float> knob(sliderPos - (knobWidth / 2), y + (height - knobHeight) / 2, knobWidth, knobHeight);
+        g.fillRect(knob);
+    }
 }
 
 
@@ -179,4 +204,15 @@ void AppLAF::drawTableHeaderBackground(juce::Graphics& g, juce::TableHeaderCompo
     // Linee decorative dorate
     g.setColour(juce::Colours::gold);
     g.drawRect(r);
+}
+
+
+void AppLAF::drawButtonText(juce::Graphics& g, juce::TextButton& button, bool shouldDrawButtonAsHighlighted, bool shouldDrawButtonAsDown)
+{
+    juce::Font buttonFont = antaRegular; // Usa il font personalizzato
+    buttonFont.setHeight(20.0f); // Imposta l'altezza del font
+    buttonFont.setBold(true);
+    g.setFont(buttonFont);
+    g.setColour(button.findColour(button.getToggleState() ? juce::TextButton::textColourOnId : juce::TextButton::textColourOffId));
+    g.drawText(button.getButtonText(), button.getLocalBounds(), juce::Justification::centred, true);
 }

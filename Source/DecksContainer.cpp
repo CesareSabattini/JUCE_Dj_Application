@@ -17,11 +17,14 @@ void DecksContainer::paint (juce::Graphics& g)
 
 void DecksContainer::resized()
 {
-    int borderGap = 10; 
-    int x = borderGap;
+    
+    int x = 0;
+    const int inBetweenWidth = 250;
+    const int deckWidth = (getWidth()-inBetweenWidth)/2;
+
     for (auto& deckGUI : deckGUIs)
     {
-        deckGUI->setBounds(x, 0, (getWidth()-2*borderGap)/2, getHeight());
-        x += (getWidth() - 2 * borderGap) / 2 + borderGap;
+        deckGUI->setBounds(x, 0,deckWidth, getHeight());
+        x += deckWidth + inBetweenWidth;
     }
 }

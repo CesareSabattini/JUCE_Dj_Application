@@ -4,6 +4,9 @@
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1">
   <MAINGROUP id="Qw6aS4" name="Otodecks">
     <GROUP id="{E5B562AE-E66A-DFEF-5B34-4F13FE12F160}" name="Source">
+      <FILE id="BD4kiy" name="CommonEffects.cpp" compile="1" resource="0"
+            file="Source/CommonEffects.cpp"/>
+      <FILE id="vtXASK" name="CommonEffects.h" compile="0" resource="0" file="Source/CommonEffects.h"/>
       <FILE id="LNzdqc" name="Playlist.cpp" compile="1" resource="0" file="Source/Playlist.cpp"/>
       <FILE id="q6RdbW" name="Playlist.h" compile="0" resource="0" file="Source/Playlist.h"/>
       <FILE id="iQYAsL" name="DecksContainer.cpp" compile="1" resource="0"

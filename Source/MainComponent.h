@@ -4,7 +4,7 @@
 #include"DeckGUI.h"
 #include"DjAudioPlayer.h"
 #include"DecksContainer.h"
-
+#include"CommonEffects.h"
 
 
 class MainComponent  : public juce::AudioAppComponent
@@ -28,6 +28,13 @@ private:
       std::vector<std::unique_ptr<DeckGUI>> deckGUIs;
     juce::MixerAudioSource mixer;
     AppLAF appLAF;
+    juce::TextButton syncButton;
+
+
+    CommonEffects commonEffects;
+    juce::Viewport effectsViewport;
+    juce::TextButton leftButton;
+    juce::TextButton rightButton;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };
