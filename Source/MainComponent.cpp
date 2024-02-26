@@ -63,6 +63,7 @@ rightButton("rightButton", juce::Colours::gold, juce::Colours::white, juce::Colo
     stopButton.onClick = [this] {
         for (auto& player : players) {
             player->stop();
+            
         }
     };
     addAndMakeVisible(stopButton);
@@ -89,7 +90,7 @@ rightButton("rightButton", juce::Colours::gold, juce::Colours::white, juce::Colo
     addAndMakeVisible(leftButton);
 
     leftButton.onClick = [this] {
-        effectsViewport.setViewPosition(effectsViewport.getViewPositionX() - 300, effectsViewport.getViewPositionY());
+        effectsViewport.setViewPosition(effectsViewport.getViewPositionX()-effectsViewport.getWidth(), effectsViewport.getViewPositionY());
     };
 
 
@@ -104,13 +105,20 @@ rightButton("rightButton", juce::Colours::gold, juce::Colours::white, juce::Colo
     rightButton.setShape(rightTrianglePath, true, true, true);
     addAndMakeVisible(rightButton);
     rightButton.onClick = [this] {
-        effectsViewport.setViewPosition(effectsViewport.getViewPositionX() + 300, effectsViewport.getViewPositionY());
+        effectsViewport.setViewPosition(effectsViewport.getViewPositionX() + effectsViewport.getWidth(), effectsViewport.getViewPositionY());
     };
   
 
     commonEffects.onParametersChanged = [this](const juce::Reverb::Parameters& params) {
         for (auto& player : players) {
             player->setReverbParameters(params);
+
+        }
+    };
+
+    commonEffects.onDelayParametersChanged = [this](const DelayParameters& params) {
+        for (auto& player : players) {
+            player->setDelayParameters(params.delayTime, params.feedback, params.wetLevel);
 
         }
     };
@@ -180,7 +188,7 @@ void MainComponent::resized()
     stopButton.setBounds(pauseButton.getRight() + middleGap, playButton.getBottom() + middleGap, (250 - 3 * middleGap) / 2, 60);
 
     effectsViewport.setBounds((getWidth() - 250) / 2, 340, 250, getHeight() - 310);
-    commonEffects.setSize(effectsViewport.getWidth()*2, effectsViewport.getHeight());
+    commonEffects.setSize(effectsViewport.getWidth()*3, effectsViewport.getHeight());
     leftButton.setBounds((getWidth() - 250) / 2+20, 350, 25, 25);
     rightButton.setBounds((getWidth()-250) / 2+ 200, 350, 25, 25);
 }

@@ -29,6 +29,21 @@ void DjAudioPlayer::prepareToPlay(int samplesPerBlockExpected,
 	
 	DBG("Preparing to play. Sample rate: " << sampleRate << ", Samples per block: " << samplesPerBlockExpected);
 	jassert(sampleRate > 0); // Aggiunge un assert per verificare che sampleRate sia positivo
+
+	currentSampleRate = sampleRate; // Memorizza il sample rate
+
+	juce::dsp::ProcessSpec spec;
+	spec.sampleRate = sampleRate;
+	spec.maximumBlockSize = samplesPerBlockExpected;
+	spec.numChannels = 2; // Ad esempio, per stereo
+
+	delayLine.reset();
+	delayLine.prepare(spec);
+	auto maxDelayTimeInSamples = sampleRate * (2000.0f / 1000.0);
+	delayLine.setMaximumDelayInSamples(maxDelayTimeInSamples);
+	auto delayTimeInSamples = currentSampleRate * (500.0f / 1000.0);
+	delayLine.setDelay(delayTimeInSamples);
+
 	transportSource.prepareToPlay(samplesPerBlockExpected, sampleRate);
 	resampleSource.prepareToPlay(samplesPerBlockExpected, sampleRate);
 }
@@ -41,6 +56,7 @@ void DjAudioPlayer::getNextAudioBlock(const juce::AudioSourceChannelInfo&
 	resampleSource.getNextAudioBlock(bufferToFill);
 	reverb.processStereo(bufferToFill.buffer->getWritePointer(0), bufferToFill.buffer->getWritePointer(1), bufferToFill.numSamples);
 
+	applyDelay(*bufferToFill.buffer, bufferToFill.numSamples);
 
 }
 
@@ -146,8 +162,10 @@ void DjAudioPlayer::start(void)
 
  void DjAudioPlayer::stop(void)
  {
+	 
 	 transportSource.stop();
 	 transportSource.setPosition(0.0);
+	 
 	}
  void DjAudioPlayer::pause(void)
  {
@@ -176,5 +194,19 @@ void DjAudioPlayer::start(void)
 	  }
 	  else {
 		  juce::Logger::writeToLog("Failed to create audio format reader.");
+	  }
+  }
+
+
+  void DjAudioPlayer::applyDelay(juce::AudioBuffer<float>& buffer, int numSamples) {
+	  for (int channel = 0; channel < buffer.getNumChannels(); ++channel) {
+		  auto* channelData = buffer.getWritePointer(channel);
+
+		  for (int i = 0; i < numSamples; ++i) {
+			  const float in = channelData[i];
+			  float out = delayLine.popSample(channel, delayTime * currentSampleRate / 1000.0f, true);
+			  delayLine.pushSample(channel, in + out * feedback);
+			  channelData[i] = in * (1.0f - wetLevel) + out * wetLevel;
+		  }
 	  }
   }

@@ -29,7 +29,15 @@ public:
     void setReverbParameters(const juce::Reverb::Parameters& params) {
         reverb.setParameters(params);
     }
+    void setDelayParameters(float delayTime, float feedback, float wetLevel) {
+        this->delayTime = delayTime;
+        this->feedback = feedback;
+        this->wetLevel = wetLevel;
+    }
+    void applyDelay(juce::AudioBuffer<float>& buffer, int numSamples);
 private:
+
+    double currentSampleRate = 44100;
 
     juce::AudioFormatManager formatManager;
     std::unique_ptr<juce::AudioFormatReaderSource> readerSource;
@@ -42,6 +50,11 @@ false,2};
 
     juce::Reverb reverb;
     juce::Reverb::Parameters reverbParams;
+
+    juce::dsp::DelayLine<float> delayLine;
+    float delayTime = 500.0f; // Tempo di delay in millisecondi
+    float feedback = 0.5f;
+    float wetLevel = 0.5f;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DjAudioPlayer)
 };
