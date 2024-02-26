@@ -85,7 +85,9 @@ void AppLAF::drawLabel(juce::Graphics& g, juce::Label& label) {
     auto cornerSize = 4.0f; // Raggio degli angoli arrotondati per il bordo
 
     // Sfondo scuro della Label
-    g.setColour(juce::Colours::darkgrey.withAlpha(0.5f)); // Colore e trasparenza dello sfondo
+    juce::ColourGradient silverGradient(juce::Colours::white.withAlpha(0.8f), bounds.getX(), bounds.getY(),
+        juce::Colours::grey.withAlpha(0.5f), bounds.getX(), bounds.getBottom(), false);
+    g.setGradientFill(silverGradient);
     g.fillRoundedRectangle(bounds, cornerSize);
 
     // Effetto di profondità
@@ -95,7 +97,7 @@ void AppLAF::drawLabel(juce::Graphics& g, juce::Label& label) {
     g.strokePath(depthEffect, juce::PathStrokeType(2.0f)); // Spessore e stile del bordo
 
     // Testo della Label
-    g.setColour(juce::Colours::gold); // Usa il colore del testo definito nella Label
+    g.setColour(juce::Colour(30,30,30)); // Usa il colore del testo definito nella Label
     g.setFont(label.getFont()); // Usa il font definito nella Label
 
     auto textArea = bounds.reduced(4); // Riduci leggermente l'area del testo per il padding
@@ -111,7 +113,7 @@ void AppLAF::drawButtonBackground(juce::Graphics& g, juce::Button& button,
     auto cornerRadius = 6.0f; // Raggio degli angoli arrotondati del pulsante
 
     // Scegli il colore del pulsante in base allo stato
-    auto baseColour = isButtonDown ? juce::Colours::darkgrey.darker() : juce::Colours::darkgrey;
+    auto baseColour = isButtonDown ? juce::Colour(30, 30, 30) : juce::Colours::darkgrey;
     g.setColour(baseColour);
 
     // Disegna il fondo del pulsante con angoli arrotondati
@@ -119,24 +121,32 @@ void AppLAF::drawButtonBackground(juce::Graphics& g, juce::Button& button,
 
     // Aggiungi un effetto di luce per dare l'impressione che il pulsante sporga
     if (!isButtonDown) {
-        juce::ColourGradient gradient(juce::Colours::white.withAlpha(0.3f), buttonBounds.getX(), buttonBounds.getY(),
-            juce::Colours::transparentBlack, buttonBounds.getX(), buttonBounds.getBottom(), false);
+        juce::ColourGradient gradient(juce::Colour(54, 54, 54), buttonBounds.getX(), buttonBounds.getY(),
+            juce::Colour(30, 30, 30), buttonBounds.getX(), buttonBounds.getBottom(), false);
         g.setGradientFill(gradient);
-        g.fillRoundedRectangle(buttonBounds, cornerRadius);
+        g.fillRect(buttonBounds);
     }
 
-    // Aggiungi un bordo scuro per definire meglio il pulsante
-    g.setColour(juce::Colours::black.withAlpha(0.5f));
-    g.drawRoundedRectangle(buttonBounds.reduced(1.0f), cornerRadius, 1.0f); // L'ultimo parametro è lo spessore del bordo
+    // Disegna un bordo argentato lucente
+    juce::ColourGradient silverGradient(juce::Colours::white.withAlpha(0.8f), buttonBounds.getX(), buttonBounds.getY(),
+        juce::Colours::grey.withAlpha(0.5f), buttonBounds.getX(), buttonBounds.getBottom(), false);
+    g.setGradientFill(silverGradient);
+    g.drawRect(buttonBounds.reduced(1.0f), 2.0f); // Usa uno spessore maggiore per un bordo più evidente
 
-    // Gestisci manualmente il disegno del testo se il pulsante contiene del testo
-    if (button.getButtonText().isNotEmpty()) {
-      
-
-        g.drawText(button.getButtonText(), button.getLocalBounds(),
-            juce::Justification::centred, true);
+    // Per un effetto extra lucente, aggiungi un sottile bordo chiaro nella parte superiore del pulsante
+    if (!isButtonDown) {
+        auto highlightBounds = buttonBounds.reduced(2.0f);
+        highlightBounds.removeFromBottom(buttonBounds.getHeight() / 2);
+        juce::ColourGradient highlightGradient(juce::Colours::white.withAlpha(0.5f), highlightBounds.getX(), highlightBounds.getY(),
+            juce::Colours::transparentWhite, highlightBounds.getX(), highlightBounds.getBottom(), false);
+        g.setGradientFill(highlightGradient);
+        g.drawRect(highlightBounds, 1.0f); // Sottile bordo superiore per un effetto lucente
     }
+
+  
 }
+
+
 
 void AppLAF::drawLinearSlider(juce::Graphics& g, int x, int y, int width, int height,
     float sliderPos, float minSliderPos, float maxSliderPos,
@@ -213,6 +223,6 @@ void AppLAF::drawButtonText(juce::Graphics& g, juce::TextButton& button, bool sh
     buttonFont.setHeight(20.0f); // Imposta l'altezza del font
     buttonFont.setBold(true);
     g.setFont(buttonFont);
-    g.setColour(button.findColour(button.getToggleState() ? juce::TextButton::textColourOnId : juce::TextButton::textColourOffId));
+    g.setColour(juce::Colours::gold);
     g.drawText(button.getButtonText(), button.getLocalBounds(), juce::Justification::centred, true);
 }

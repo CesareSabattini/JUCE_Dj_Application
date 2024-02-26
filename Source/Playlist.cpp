@@ -1,23 +1,14 @@
-/*
-  ==============================================================================
-
-    Playlist.cpp
-    Created: 25 Feb 2024 10:56:58am
-    Author:  cesar
-
-  ==============================================================================
-*/
-
 #include <JuceHeader.h>
 #include "Playlist.h"
 
 
-Playlist::Playlist(DjAudioPlayer* audioPlayer) : player{audioPlayer} {
+Playlist::Playlist(DjAudioPlayer* audioPlayer) : player{audioPlayer}, chosenTrack("","",0.0,""){
     loadTracksFromDirectory();
         // Configura il pulsante "Add Track"
         addTrackButton.setButtonText("+");
         addTrackButton.onClick = [this] { addTrack(); };
         addAndMakeVisible(addTrackButton);
+        addTrackButton.setLookAndFeel(appLAF.get());
 
         // Inizializza e configura la tabella
         tableComponent.setModel(this);
@@ -29,6 +20,7 @@ Playlist::Playlist(DjAudioPlayer* audioPlayer) : player{audioPlayer} {
         tableComponent.getHeader().addColumn("Length", 3, 100);
         tableComponent.getHeader().addColumn("Path", 4, 100);
         setLookAndFeel(appLAF.get());
+
         
     }
 
@@ -43,17 +35,50 @@ void Playlist::paint (juce::Graphics& g)
 }
 
 void Playlist::addTrack() {
-    // Implementa la logica per aggiungere una traccia
-    DBG("Add Track Button Clicked");
-    player->loadURL();
+
+    
+
+    chooser = std::make_unique<juce::FileChooser>("Select a Wave file to play...",
+        juce::File{}, "*.wav");
+    auto chooserFlags = juce::FileBrowserComponent::openMode | juce::FileBrowserComponent::canSelectFiles;
+
+    chooser->launchAsync(chooserFlags, [this](const juce::FileChooser& fc)
+        {
+            auto file = fc.getResult();
+            if (file != juce::File{}) {
+                // Costruisci il percorso della directory "Playlist" nella directory del progetto
+                auto playlistDir = juce::File::getCurrentWorkingDirectory().getChildFile("Playlist");
+                if (!playlistDir.exists()) {
+                    playlistDir.createDirectory(); // Crea la directory se non esiste
+                }
+
+                // Costruisci il percorso del file di destinazione all'interno della directory "Playlist"
+                auto destinationFile = playlistDir.getChildFile(file.getFileName());
+
+                // Copia il file selezionato nella directory "Playlist", sovrascrivendo se esiste
+                file.copyFileTo(destinationFile);
+
+                auto name = destinationFile.getFileNameWithoutExtension();
+                auto lengthInSeconds = destinationFile.getSize() / 1024.0; // Esempio di placeholder
+                auto path = destinationFile.getFullPathName();
+                tracks = std::vector<Track>();
+                loadTracksFromDirectory();
+                // Potrebbe essere necessario aggiornare l'UI per riflettere i nuovi file aggiunti
+                tableComponent.updateContent();
+            }
+
+        }
+    );
     setVisible(false);
-   
 }
+        
+   
+
 
 void Playlist::resized() {
     auto area = getLocalBounds();
-    addTrackButton.setBounds(area.removeFromTop(30).reduced(8));
-    tableComponent.setBounds(area.reduced(8));
+    addTrackButton.setBounds(getRight()-130, 5, 80, 20);
+    tableComponent.setBounds(area.reduced(40));
 }
 
 
@@ -113,6 +138,7 @@ void Playlist::selectedRowsChanged(int lastRowSelected) {
 
         if (audioFile.existsAsFile()) {
             // Chiama un metodo sul tuo DjAudioPlayer per caricare e riprodurre il file
+            chosenTrack = selectedTrack;
             player->loadFileAndPlay(audioFile);
             setVisible(false);
         }
@@ -120,6 +146,28 @@ void Playlist::selectedRowsChanged(int lastRowSelected) {
             juce::AlertWindow::showMessageBoxAsync(juce::AlertWindow::WarningIcon,
                 "File Not Found",
                 "The selected audio file could not be found.");
+        }
+    }
+}
+
+bool Playlist::isInterestedInFileDrag(const juce::StringArray& files){
+    // Qui puoi verificare se i file trascinati sono di un tipo che la tua app può gestire
+    // Per semplicità, restituiamo true per indicare interesse per qualsiasi file
+    return true;
+}
+
+void Playlist::filesDropped(const juce::StringArray& files, int x, int y){
+    for (const auto& file : files) {
+        juce::File audioFile(file);
+        if (audioFile.existsAsFile()) {
+            // Aggiungi il file alla tua playlist
+            auto name = audioFile.getFileNameWithoutExtension();
+            auto lengthInSeconds = audioFile.getSize() / 1024.0; // Esempio di placeholder
+            auto path = audioFile.getFullPathName();
+            tracks.emplace_back(name, "Unknown", lengthInSeconds, path);
+
+            // Potrebbe essere necessario aggiornare l'UI per riflettere i nuovi file aggiunti
+            tableComponent.updateContent();
         }
     }
 }

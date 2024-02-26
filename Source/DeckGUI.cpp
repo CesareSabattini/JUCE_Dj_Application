@@ -144,8 +144,8 @@ void DeckGUI::paint(juce::Graphics& g)
 
         if (!disk.isNull()) {
             g.saveState();
-            auto diskCentreX = 250;
-            auto diskCentreY = bounds.getCentreY();
+            auto diskCentreX = 200;
+            auto diskCentreY = bounds.getCentreY()+50;
             auto imageCentre = juce::Point<int>(diskCentreX, diskCentreY);
 
             // Applica una trasformazione per ruotare tutto attorno al suo centro
@@ -202,8 +202,8 @@ void DeckGUI::paint(juce::Graphics& g)
         float desiredCentreY = 250.0f;
 
         // Calcola lo spostamento necessario per centrare l'immagine in (desiredCentreX, desiredCentreY)
-        float translateX = desiredCentreX - (arm.getWidth() / 2.0f);
-        float translateY = desiredCentreY - (arm.getHeight() / 2.0f);
+        float translateX = desiredCentreX - (arm.getWidth() / 2.0f)-10;
+        float translateY = desiredCentreY - (arm.getHeight() / 2.0f)+130;
 
         // Crea una trasformazione affine per traslare e poi ruotare l'immagine
         auto transform = juce::AffineTransform::translation(translateX, translateY)
@@ -213,18 +213,30 @@ void DeckGUI::paint(juce::Graphics& g)
         g.drawImageTransformed(arm, transform, false);
 
 
-        auto thumbnailBounds = juce::Rectangle<int>(10, 0, bounds.getWidth() - 20, 100); // Adatta questi valori al tuo layout
-
+        auto thumbnailBounds = juce::Rectangle<int>(10, 40, bounds.getWidth() - 20, 200); // Adatta questi valori al tuo layout
+        auto trackSpecsBounds = juce::Rectangle<int>(10, 10, bounds.getWidth() - 20, 30);
         // Disegna lo sfondo della thumbnail
-        g.setColour(juce::Colours::slategrey); // Grigio scuro "fuliggine"
+        juce::ColourGradient thumbnailGradient(juce::Colour(54, 54, 54), thumbnailBounds.getX(), thumbnailBounds.getY(),
+            juce::Colour(30, 30, 30), thumbnailBounds.getX(), thumbnailBounds.getBottom(), false);
+        g.setGradientFill(thumbnailGradient); 
         g.fillRect(thumbnailBounds);
-
+       
         auto& thumbnail = djAudioPlayer->getThumbnail();
+        auto& trackName = playlist->getChosenTrackSpecs();
         if (thumbnail.getNumChannels() > 0) {
             // Disegna la parte della thumbnail relativa all'audio non ancora riprodotto
+            juce::ColourGradient silverGradient(juce::Colours::white.withAlpha(0.8f), thumbnailBounds.getX(), thumbnailBounds.getY(),
+                juce::Colours::grey.withAlpha(0.5f), thumbnailBounds.getX(), thumbnailBounds.getBottom(), false);
+            g.setGradientFill(silverGradient);
+            g.drawRect(10.0f, 10.0f, (float)bounds.getWidth() - 20.0f, 230.0f, 5.0f);
+
             g.setColour(juce::Colours::darkgrey);
             thumbnail.drawChannel(g, thumbnailBounds, 0, thumbnail.getTotalLength(), 0, 1.0f);
-
+            g.setColour(juce::Colours::silver);
+            g.fillRect(trackSpecsBounds);
+            g.setColour(juce::Colours::black);
+            g.drawFittedText(trackName.name,trackSpecsBounds,juce::Justification::centred,1);
+            
             // Calcola la larghezza della parte riprodotta e disegnala in oro
             auto audioPosition = (float)djAudioPlayer->getTransportSource()->getCurrentPosition();
             auto proportionPlayed = audioPosition / thumbnail.getTotalLength();
@@ -239,9 +251,22 @@ void DeckGUI::paint(juce::Graphics& g)
             g.drawLine(lineX, thumbnailBounds.getY(), lineX, thumbnailBounds.getBottom(), 2.0f);
         }
         else {
+
             // Nessun file caricato, mostra solo lo sfondo
-            g.setColour(juce::Colours::darkgrey);
-            g.fillRect(thumbnailBounds);
+            juce::ColourGradient gradient(juce::Colour(54, 54, 54), thumbnailBounds.getX(), thumbnailBounds.getY(),
+                juce::Colour(30, 30, 30), thumbnailBounds.getX(), thumbnailBounds.getBottom(), false);
+            g.setGradientFill(gradient);
+            g.fillRect(thumbnailBounds); juce::ColourGradient silverGradient(juce::Colours::white.withAlpha(0.8f), thumbnailBounds.getX(), thumbnailBounds.getY(),
+                juce::Colours::grey.withAlpha(0.5f), thumbnailBounds.getX(), thumbnailBounds.getBottom(), false);
+            g.setGradientFill(silverGradient);
+
+           g.setGradientFill(silverGradient);
+            g.drawRect(thumbnailBounds.reduced(1.0f),5);
+
+         
+            g.setColour(juce::Colours::gold);
+            g.setFont(20.0f);
+            g.drawFittedText("Choose an audio file", thumbnailBounds, juce::Justification::centred, 1);
         }}
         else {
             g.fillAll(juce::Colours::darkgrey);
@@ -253,7 +278,7 @@ void DeckGUI::paint(juce::Graphics& g)
 
 void DeckGUI::timerCallback() {
     if (!playlist->isVisible()) {
-        if (isPlaying) {
+        if (djAudioPlayer->getTransportSource()->isPlaying()) {
             const float rotationSpeed = 2 * juce::MathConstants<float>::twoPi; // Radianti al secondo
             const float frameTime = 1.0f / 60.0f; // Tempo per frame a 60 FPS
 
@@ -276,24 +301,22 @@ void DeckGUI::timerCallback() {
 
 void DeckGUI::resized()
 {
-    const int borderGap = 5;
     const int labelWidth = 110;
     const int labelHeight = 30;
-    int buttonWidth = 150;
     int buttonHeight = 60;
-    int buttonGap = 5;
+    int buttonGap = 20;
+    int buttonWidth = (getWidth()-5*buttonGap) / 4;
     int sliderWidth = 80;
     int sliderHeight = 250;
     const int sliderLabelWidth = 30;
     const int sliderLabelHeight = 20;
     int sliderGap = 10;
-    float buttonX = 40;
-    float buttonY = getHeight() - 100;;
+    float buttonY = getHeight() - 100;
 
 
    
    
-    playButton.setBounds(buttonX, buttonY, buttonWidth, buttonHeight);
+    playButton.setBounds(buttonGap, buttonY, buttonWidth, buttonHeight);
     pauseButton.setBounds(playButton.getRight()+buttonGap, buttonY, buttonWidth, buttonHeight);
     stopButton.setBounds(pauseButton.getRight() + buttonGap, buttonY, buttonWidth, buttonHeight);
 
@@ -301,9 +324,9 @@ void DeckGUI::resized()
    
    
     
-    volSlider.setBounds(getLocalBounds().getCentreX()+sliderWidth, getLocalBounds().getCentreY() - sliderHeight / 2, sliderWidth, sliderHeight);
-    speedSlider.setBounds(volSlider.getRight(), getLocalBounds().getCentreY() - sliderHeight / 2, sliderWidth, sliderHeight);
-    posSlider.setBounds(speedSlider.getRight(), getLocalBounds().getCentreY() - sliderHeight / 2, sliderWidth, sliderHeight);
+    volSlider.setBounds(getLocalBounds().getCentreX()+sliderWidth, getLocalBounds().getCentreY() - sliderHeight / 2+100, sliderWidth, sliderHeight);
+    speedSlider.setBounds(volSlider.getRight(), getLocalBounds().getCentreY() - sliderHeight / 2+100, sliderWidth, sliderHeight);
+    posSlider.setBounds(speedSlider.getRight(), getLocalBounds().getCentreY() - sliderHeight / 2+100, sliderWidth, sliderHeight);
 
     volSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, sliderLabelWidth, sliderLabelHeight);
     speedSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, sliderLabelWidth, sliderLabelHeight);

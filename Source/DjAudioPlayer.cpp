@@ -8,6 +8,12 @@ thumbnail(512, formatManager, thumbnailCache)
 	
 	formatManager.registerBasicFormats();
 	transportSource.addChangeListener(this);
+
+	reverbParams.roomSize = 0.5; // Dimensione della stanza, range [0, 1]
+	reverbParams.damping = 0.5; // Smorzamento, range [0, 1]
+	reverbParams.wetLevel = 0.33; // Livello del segnale riverberato, range [0, 1]
+	reverbParams.dryLevel = 0.4; // Livello del segnale diretto, range [0, 1]
+	reverb.setParameters(reverbParams);
 }
 
 DjAudioPlayer::~DjAudioPlayer()
@@ -29,8 +35,13 @@ void DjAudioPlayer::prepareToPlay(int samplesPerBlockExpected,
 
 void DjAudioPlayer::getNextAudioBlock(const juce::AudioSourceChannelInfo&
 	bufferToFill) {
-
+	if (transportSource.isPlaying() && transportSource.getCurrentPosition() >= transportSource.getLengthInSeconds()) {
+		transportSource.setPosition(0.0f);
+	}
 	resampleSource.getNextAudioBlock(bufferToFill);
+	reverb.processStereo(bufferToFill.buffer->getWritePointer(0), bufferToFill.buffer->getWritePointer(1), bufferToFill.numSamples);
+
+
 }
 
 void DjAudioPlayer::releaseResources()

@@ -26,7 +26,9 @@ public:
     juce::AudioTransportSource* getTransportSource();
     juce::AudioThumbnail& getThumbnail() { return thumbnail; }
     void loadFileAndPlay(const juce::File& file);
- 
+    void setReverbParameters(const juce::Reverb::Parameters& params) {
+        reverb.setParameters(params);
+    }
 private:
 
     juce::AudioFormatManager formatManager;
@@ -37,6 +39,9 @@ false,2};
     juce::AudioThumbnail thumbnail;
     juce::AudioThumbnailCache thumbnailCache;
     std::unique_ptr<juce::FileChooser> chooser;
+
+    juce::Reverb reverb;
+    juce::Reverb::Parameters reverbParams;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DjAudioPlayer)
 };

@@ -29,12 +29,14 @@ private:
     juce::MixerAudioSource mixer;
     AppLAF appLAF;
     juce::TextButton syncButton;
-
+    juce::TextButton playButton;
+    juce::TextButton pauseButton;
+    juce::TextButton stopButton;
 
     CommonEffects commonEffects;
     juce::Viewport effectsViewport;
-    juce::TextButton leftButton;
-    juce::TextButton rightButton;
+    juce::ShapeButton leftButton;
+    juce::ShapeButton rightButton;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };

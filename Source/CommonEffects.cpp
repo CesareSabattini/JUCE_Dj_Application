@@ -47,8 +47,17 @@ CommonEffects::CommonEffects()
     dryLevelSlider.setLookAndFeel(&appLAF);
     widthSlider.setLookAndFeel(&appLAF);
 
+    roomSlider.addListener(this);
+    dampingSlider.addListener(this);
+    wetLevelSlider.addListener(this);
+    dryLevelSlider.addListener(this);
+    widthSlider.addListener(this);
 
-
+    roomSlider.setTextBoxStyle(juce::Slider::TextBoxLeft, true, 45, 30);
+    dampingSlider.setTextBoxStyle(juce::Slider::TextBoxLeft, true, 45, 30);
+    wetLevelSlider.setTextBoxStyle(juce::Slider::TextBoxLeft, true, 45, 30);
+    dryLevelSlider.setTextBoxStyle(juce::Slider::TextBoxLeft, true, 45, 30);
+    widthSlider.setTextBoxStyle(juce::Slider::TextBoxLeft, true, 45, 30);
 
 }
 
@@ -63,16 +72,19 @@ void CommonEffects::paint (juce::Graphics& g)
 
 void CommonEffects::resized()
 {
-    int heightFraction = (getHeight() - 60) / 5;
+    int heightFraction = (getHeight() - 120) / 5;
     const int offSet = 50;
-    reverbLabel.setBounds(0, 0, getWidth() / 2, offSet);
-    effectsLabel.setBounds(getWidth() / 2, 0, getWidth() / 2, 50);
 
-    roomSlider.setBounds(0, heightFraction+ offSet, getWidth() / 2, heightFraction);
-    dampingSlider.setBounds(0, heightFraction*2+ offSet, getWidth()/2, heightFraction);
-    wetLevelSlider.setBounds(0, heightFraction*3+ offSet, getWidth() / 2, heightFraction);
-    dryLevelSlider.setBounds(0, heightFraction*4+ offSet, getWidth() / 2, heightFraction);
-    widthSlider.setBounds(0, heightFraction*5+offSet, getWidth() / 2, heightFraction);
+    const int borderGap = 20;
+    reverbLabel.setBounds(20, 0, getWidth() / 2-40, offSet);
+    effectsLabel.setBounds(getWidth() / 2+20, 0, getWidth() / 2-40, 50);
+
+    roomSlider.setBounds(borderGap, heightFraction, (getWidth()-2* borderGap) / 2, heightFraction);
+    dampingSlider.setBounds(borderGap, heightFraction * 2, (getWidth() - 2 * borderGap) / 2, heightFraction);
+    wetLevelSlider.setBounds(borderGap, heightFraction * 3, (getWidth() - 2 * borderGap) / 2, heightFraction);
+    dryLevelSlider.setBounds(borderGap, heightFraction * 4, (getWidth() - 2 * borderGap) / 2, heightFraction);
+    widthSlider.setBounds(borderGap, heightFraction * 5, (getWidth() - 2 * borderGap) / 2, heightFraction);
+
 
 
 }

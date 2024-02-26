@@ -31,7 +31,10 @@ struct Track {
 
 
 class Playlist  : public juce::Component,
-    public juce::TableListBoxModel{
+    public juce::TableListBoxModel,
+    public juce::FileDragAndDropTarget
+
+{
 public:
     Playlist(DjAudioPlayer* audio);
     ~Playlist() override;
@@ -46,13 +49,21 @@ public:
     void selectedRowsChanged(int lastRowSelected);
     void loadTracksFromDirectory();
 
+    bool isInterestedInFileDrag(const juce::StringArray& files) override;
+
+    void filesDropped(const juce::StringArray& files, int x, int y) override;
+
+    Track getChosenTrackSpecs() {
+        return chosenTrack;
+    }
 private:
     std::unique_ptr<AppLAF> appLAF;
     DjAudioPlayer* player;
     juce::TableListBox tableComponent;
     std::vector<Track> tracks;
+    Track chosenTrack;
     juce::TextButton addTrackButton{ "Add Track" };
-
+    std::unique_ptr<juce::FileChooser> chooser;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Playlist)
 };
 

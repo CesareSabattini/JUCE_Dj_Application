@@ -1,6 +1,7 @@
 #include "MainComponent.h"
 
-MainComponent::MainComponent()
+MainComponent::MainComponent(): leftButton("leftButton", juce::Colours::gold, juce::Colours::white,juce::Colours::grey),
+rightButton("rightButton", juce::Colours::gold, juce::Colours::white, juce::Colours::grey)
 {
    setSize(600, 400);
    
@@ -40,24 +41,79 @@ MainComponent::MainComponent()
     addAndMakeVisible(syncButton);
     syncButton.setLookAndFeel(&appLAF);
 
+    playButton.setButtonText("Play");
+    playButton.onClick = [this] {
+        for (auto& player : players) {
+            player->start();
+        }
+    };
+    addAndMakeVisible(playButton);
+    playButton.setLookAndFeel(&appLAF);
+
+    pauseButton.setButtonText("Pause");
+    pauseButton.onClick = [this] {
+        for (auto& player : players) {
+            player->pause();
+        }
+    };
+    addAndMakeVisible(pauseButton);
+    pauseButton.setLookAndFeel(&appLAF);
+
+    stopButton.setButtonText("Stop");
+    stopButton.onClick = [this] {
+        for (auto& player : players) {
+            player->stop();
+        }
+    };
+    addAndMakeVisible(stopButton);
+    stopButton.setLookAndFeel(&appLAF);
+
+
+
     resized();
-    
+    effectsViewport.setScrollBarsShown(false, false);
     addAndMakeVisible(effectsViewport);
     effectsViewport.setViewedComponent(&commonEffects, false);
     // Dimensioni di esempio
 
+
+
+            // Crea il triangolo per il pulsante sinistro
+    juce::Path leftTrianglePath;
+    leftTrianglePath.startNewSubPath(5, 5); // Punto in alto
+    leftTrianglePath.lineTo(0, 0); // Punto in basso a sinistra
+    leftTrianglePath.lineTo(5, -5); // Punto in basso a destra
+    leftTrianglePath.closeSubPath(); // Chiudi il percorso
+
+    leftButton.setShape(leftTrianglePath, true, true, true);
     addAndMakeVisible(leftButton);
-    leftButton.setButtonText("Sinistra");
+
     leftButton.onClick = [this] {
         effectsViewport.setViewPosition(effectsViewport.getViewPositionX() - 300, effectsViewport.getViewPositionY());
     };
 
+
+
+    juce::Path rightTrianglePath;
+    rightTrianglePath.startNewSubPath(0, 5);  // Punto in alto a sinistra
+    rightTrianglePath.lineTo(0, -5); // Punto in alto a destra
+    rightTrianglePath.lineTo(5, 0);  // Punto in basso a sinistra
+    rightTrianglePath.closeSubPath(); // Chiudi il percorso
+
+
+    rightButton.setShape(rightTrianglePath, true, true, true);
     addAndMakeVisible(rightButton);
-    rightButton.setButtonText("Destra");
     rightButton.onClick = [this] {
         effectsViewport.setViewPosition(effectsViewport.getViewPositionX() + 300, effectsViewport.getViewPositionY());
     };
   
+
+    commonEffects.onParametersChanged = [this](const juce::Reverb::Parameters& params) {
+        for (auto& player : players) {
+            player->setReverbParameters(params);
+
+        }
+    };
 
 }
 
@@ -107,20 +163,26 @@ void shadeRect(juce::Graphics& g, juce::Rectangle<float> rect, juce::Colour colo
 
 void MainComponent::paint(juce::Graphics& g)
 {
- 
+    g.fillAll(juce::Colour(30,30,30));
 
 }
 
 void MainComponent::resized()
 {
-    const int middleGap = 30;
-    otodecksLabel.setBounds((getWidth()-250)/2, 0, 250,100);
+
+    const int topGap = 40;
+    const int middleGap = 15;
+    otodecksLabel.setBounds((getWidth()-250)/2+20, 20, 210,80);
     container.setBounds(0, 0,getWidth(), getHeight());
-    syncButton.setBounds((getWidth() - 250) / 2 + middleGap, 100 + middleGap, 250 - 2 * middleGap, 100);
-    effectsViewport.setBounds((getWidth() - 250) / 2, 310, 250, getHeight() - 310);
+    syncButton.setBounds((getWidth() - 250) / 2 + middleGap, 100 + topGap, (250 - 3 * middleGap)/2, 60);
+    playButton.setBounds(syncButton.getRight() + middleGap, 100 + topGap, (250 - 3 * middleGap) / 2, 60);
+    pauseButton.setBounds((getWidth() - 250) / 2 + middleGap, playButton.getBottom() + middleGap, (250 - 3 * middleGap) / 2, 60);
+    stopButton.setBounds(pauseButton.getRight() + middleGap, playButton.getBottom() + middleGap, (250 - 3 * middleGap) / 2, 60);
+
+    effectsViewport.setBounds((getWidth() - 250) / 2, 340, 250, getHeight() - 310);
     commonEffects.setSize(effectsViewport.getWidth()*2, effectsViewport.getHeight());
-    leftButton.setBounds((getWidth() - 250) / 2, 410, 50, 50);
-    rightButton.setBounds((getWidth()) / 2, 410, 50, 50);
+    leftButton.setBounds((getWidth() - 250) / 2+20, 350, 25, 25);
+    rightButton.setBounds((getWidth()-250) / 2+ 200, 350, 25, 25);
 }
 
 
