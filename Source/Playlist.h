@@ -57,13 +57,14 @@ public:
         return chosenTrack;
     }
 private:
-    std::unique_ptr<AppLAF> appLAF;
     DjAudioPlayer* player;
+    std::unique_ptr<juce::FileChooser> chooser;
+    std::unique_ptr<AppLAF> appLAF;
     juce::TableListBox tableComponent;
     std::vector<Track> tracks;
     Track chosenTrack;
     juce::TextButton addTrackButton{ "Add Track" };
-    std::unique_ptr<juce::FileChooser> chooser;
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Playlist)
 };
 

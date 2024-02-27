@@ -12,11 +12,10 @@ class DeckGUI  : public juce::Component, juce::Slider::Listener, juce::TextEdito
 public:
     DeckGUI(DjAudioPlayer* audioPlayer);
     ~DeckGUI() override;
-    void buttonClicked(juce::Button* button);
+    void buttonClicked(juce::Button* button) override;
     void timerCallback() override;
     void sliderValueChanged(juce::Slider* slider) override;
     void showPlaylist();
-
     void paint (juce::Graphics&) override;
     void resized() override;
 
@@ -25,10 +24,14 @@ private:
 
     DjAudioPlayer* djAudioPlayer;
 
+
+    AppLAF appLAF;
+
     std::unique_ptr<Playlist> playlist;
     
-    juce::Image disk;
-    juce::Image arm;
+    std::unique_ptr<juce::Image> discImage;
+    std::unique_ptr<juce::Image> armImage;
+
     float rotationAngle = 0.0f; // In radianti
     bool isPlaying = false;
    
@@ -43,8 +46,6 @@ private:
 
     juce::Rectangle<int> sliderContainerBounds;
 
-
-    AppLAF appLAF;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DeckGUI)
 };

@@ -1,11 +1,12 @@
 
+
 #include <JuceHeader.h>
 #include "DjAudioPlayer.h"
 
-DjAudioPlayer::DjAudioPlayer(): thumbnailCache(5), // Puoi regolare la dimensione della cache a seconda delle tue esigenze
+DjAudioPlayer::DjAudioPlayer() : thumbnailCache(5), // Puoi regolare la dimensione della cache a seconda delle tue esigenze
 thumbnail(512, formatManager, thumbnailCache)
 {
-	
+
 	formatManager.registerBasicFormats();
 	transportSource.addChangeListener(this);
 
@@ -26,7 +27,7 @@ DjAudioPlayer::~DjAudioPlayer()
 void DjAudioPlayer::prepareToPlay(int samplesPerBlockExpected,
 	double sampleRate)
 {
-	
+
 	DBG("Preparing to play. Sample rate: " << sampleRate << ", Samples per block: " << samplesPerBlockExpected);
 	jassert(sampleRate > 0); // Aggiunge un assert per verificare che sampleRate sia positivo
 
@@ -64,7 +65,7 @@ void DjAudioPlayer::releaseResources()
 {
 	transportSource.releaseResources();
 	resampleSource.releaseResources();
-	
+
 }
 
 
@@ -102,55 +103,55 @@ void DjAudioPlayer::loadURL()
 		});
 }
 
-	
 
 
-	
+
+
 
 
 void DjAudioPlayer::setGain(double gain)
 {
 	if (gain < 0.0 || gain>1.0) {
-std::cerr << "Gain should be between 0 and 1" << std::endl;
-	
+		std::cerr << "Gain should be between 0 and 1" << std::endl;
+
 	}
 	else {
 		transportSource.setGain(gain);
-		
+
 	}
 }
 
 void DjAudioPlayer::setSpeed(double ratio)
- { 
+{
 	if (ratio < 0.0 || ratio>100.0) {
 		std::cerr << "Speed should be between 0 and 100" << std::endl;
-		
+
 	}
 	else {
 		resampleSource.setResamplingRatio(ratio);
 	}
 }
 
- void DjAudioPlayer::setPosition(double posInSecs)
- {
-	 transportSource.setPosition(posInSecs);
+void DjAudioPlayer::setPosition(double posInSecs)
+{
+	transportSource.setPosition(posInSecs);
 }
 
- void DjAudioPlayer::setPositionRelative(double pos) {
+void DjAudioPlayer::setPositionRelative(double pos) {
 
-	 if (pos < 0.0 || pos > 1.0) {
-		 std::cerr << "Position should be between 0 and 1" << std::endl;
-	 }
-	 else {
-		 double posInSecs = transportSource.getLengthInSeconds() * pos;
-		 setPosition(posInSecs);
-		 transportSource.stop();
-	 }
+	if (pos < 0.0 || pos > 1.0) {
+		std::cerr << "Position should be between 0 and 1" << std::endl;
+	}
+	else {
+		double posInSecs = transportSource.getLengthInSeconds() * pos;
+		setPosition(posInSecs);
+		transportSource.stop();
+	}
 
- }
+}
 
 void DjAudioPlayer::start(void)
- {
+{
 	if (!transportSource.isPlaying()) {
 		DBG("Starting playback");
 		transportSource.start();
@@ -158,55 +159,55 @@ void DjAudioPlayer::start(void)
 	else {
 		DBG("TransportSource already playing");
 	}
+}
+
+void DjAudioPlayer::stop(void)
+{
+
+	transportSource.stop();
+	transportSource.setPosition(0.0);
+
+}
+void DjAudioPlayer::pause(void)
+{
+	transportSource.stop();
+}
+
+void DjAudioPlayer::changeListenerCallback(juce::ChangeBroadcaster* source) {
+
+}
+
+
+juce::AudioTransportSource* DjAudioPlayer::getTransportSource() {
+	return &transportSource;
+}
+
+void DjAudioPlayer::loadFileAndPlay(const juce::File& file) {
+	auto* reader = formatManager.createReaderFor(file);
+
+	if (reader != nullptr) {
+		auto newSource = std::make_unique<juce::AudioFormatReaderSource>(reader, true);
+		transportSource.setSource(newSource.get(), 0, nullptr, reader->sampleRate);
+		readerSource.reset(newSource.release());
+		thumbnail.setSource(new juce::FileInputSource(file));
+
+
 	}
-
- void DjAudioPlayer::stop(void)
- {
-	 
-	 transportSource.stop();
-	 transportSource.setPosition(0.0);
-	 
+	else {
+		juce::Logger::writeToLog("Failed to create audio format reader.");
 	}
- void DjAudioPlayer::pause(void)
- {
-	 transportSource.stop();
- }
-
-  void DjAudioPlayer::changeListenerCallback(juce::ChangeBroadcaster* source) {
-	 
- }
+}
 
 
-  juce::AudioTransportSource* DjAudioPlayer::getTransportSource() {
-	  return &transportSource;
-  }
+void DjAudioPlayer::applyDelay(juce::AudioBuffer<float>& buffer, int numSamples) {
+	for (int channel = 0; channel < buffer.getNumChannels(); ++channel) {
+		auto* channelData = buffer.getWritePointer(channel);
 
-  void DjAudioPlayer::loadFileAndPlay(const juce::File& file) {
-	  auto* reader = formatManager.createReaderFor(file);
-
-	  if (reader != nullptr) {
-		  auto newSource = std::make_unique<juce::AudioFormatReaderSource>(reader, true);
-		  transportSource.setSource(newSource.get(), 0, nullptr, reader->sampleRate);
-		  readerSource.reset(newSource.release());
-		  thumbnail.setSource(new juce::FileInputSource(file));
-
-		 
-	  }
-	  else {
-		  juce::Logger::writeToLog("Failed to create audio format reader.");
-	  }
-  }
-
-
-  void DjAudioPlayer::applyDelay(juce::AudioBuffer<float>& buffer, int numSamples) {
-	  for (int channel = 0; channel < buffer.getNumChannels(); ++channel) {
-		  auto* channelData = buffer.getWritePointer(channel);
-
-		  for (int i = 0; i < numSamples; ++i) {
-			  const float in = channelData[i];
-			  float out = delayLine.popSample(channel, delayTime * currentSampleRate / 1000.0f, true);
-			  delayLine.pushSample(channel, in + out * feedback);
-			  channelData[i] = in * (1.0f - wetLevel) + out * wetLevel;
-		  }
-	  }
-  }
+		for (int i = 0; i < numSamples; ++i) {
+			const float in = channelData[i];
+			float out = delayLine.popSample(channel, delayTime * currentSampleRate / 1000.0f, true);
+			delayLine.pushSample(channel, in + out * feedback);
+			channelData[i] = in * (1.0f - wetLevel) + out * wetLevel;
+		}
+	}
+}

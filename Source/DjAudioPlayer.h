@@ -37,6 +37,14 @@ public:
     void applyDelay(juce::AudioBuffer<float>& buffer, int numSamples);
 private:
 
+    std::unique_ptr<juce::FileChooser> chooser;
+    juce::Reverb reverb;
+    juce::Reverb::Parameters reverbParams;
+
+    juce::dsp::DelayLine<float> delayLine;
+    float delayTime = 500.0f; // Tempo di delay in millisecondi
+    float feedback = 0.5f;
+    float wetLevel = 0.5f;
     double currentSampleRate = 44100;
 
     juce::AudioFormatManager formatManager;
@@ -46,15 +54,7 @@ private:
 false,2};
     juce::AudioThumbnail thumbnail;
     juce::AudioThumbnailCache thumbnailCache;
-    std::unique_ptr<juce::FileChooser> chooser;
 
-    juce::Reverb reverb;
-    juce::Reverb::Parameters reverbParams;
-
-    juce::dsp::DelayLine<float> delayLine;
-    float delayTime = 500.0f; // Tempo di delay in millisecondi
-    float feedback = 0.5f;
-    float wetLevel = 0.5f;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DjAudioPlayer)
 };

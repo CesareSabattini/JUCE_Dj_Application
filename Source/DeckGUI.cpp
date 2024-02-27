@@ -1,20 +1,13 @@
-
 #include "DeckGUI.h"
 
 
-//==============================================================================
 DeckGUI::DeckGUI(DjAudioPlayer* audioPlayer) : djAudioPlayer{ audioPlayer }, playlist(std::make_unique<Playlist>(audioPlayer))
 {
 
-
-        juce::File discFile("C:/Users/cesar/Desktop/disc.png");     
-       disk= juce::ImageFileFormat::loadFrom(discFile);
-      disk= disk.rescaled(disk.getWidth() / 4, disk.getHeight() / 4);
-      startTimerHz(60);
-
-      juce::File armFile("C:/Users/cesar/Desktop/needle_arm.png");
-      arm = juce::ImageFileFormat::loadFrom(armFile);
-      arm = arm.rescaled(arm.getWidth() / 5, arm.getHeight() / 5);
+    //
+     
+    discImage = std::make_unique<juce::Image>(appLAF.getDiscImage()->rescaled(appLAF.getDiscImage()->getWidth() / 4, appLAF.getDiscImage()->getHeight() / 4));
+    armImage = std::make_unique<juce::Image>(appLAF.getArmImage()->rescaled(appLAF.getArmImage()->getWidth() / 5, appLAF.getArmImage()->getHeight() / 5));
 
 
      
@@ -66,7 +59,7 @@ DeckGUI::DeckGUI(DjAudioPlayer* audioPlayer) : djAudioPlayer{ audioPlayer }, pla
 
     addAndMakeVisible(playlist.get());
     playlist->setVisible(false);
-
+    startTimerHz(60);
 }
 
 void DeckGUI::buttonClicked(juce::Button* button)
@@ -142,20 +135,20 @@ void DeckGUI::paint(juce::Graphics& g)
         g.fillRect(bounds);
         g.setColour(juce::Colours::black);
 
-        if (!disk.isNull()) {
+        if (!discImage->isNull()) {
             g.saveState();
-            auto diskCentreX = 200;
-            auto diskCentreY = bounds.getCentreY()+50;
-            auto imageCentre = juce::Point<int>(diskCentreX, diskCentreY);
+            auto discCentreX = 200;
+            auto discCentreY = bounds.getCentreY()+50;
+            auto imageCentre = juce::Point<int>(discCentreX, discCentreY);
 
             // Applica una trasformazione per ruotare tutto attorno al suo centro
             g.addTransform(juce::AffineTransform::rotation(rotationAngle, imageCentre.getX(), imageCentre.getY()));
 
-            float radius = disk.getHeight() / 2.0f;
-            juce::Point<float> centre(diskCentreX, diskCentreY);
+            float radius = discImage->getHeight() / 2.0f;
+            juce::Point<float> centre(discCentreX, discCentreY);
 
             // Creazione del gradiente per il cerchio metallizzato
-            float outerRadius = disk.getHeight() / 2.0f + 20.0f;
+            float outerRadius = discImage->getHeight() / 2.0f + 20.0f;
             float innerRadius = outerRadius - 20.0f;
 
             // Miglioramento del gradiente con una transizione più complessa
@@ -190,7 +183,7 @@ void DeckGUI::paint(juce::Graphics& g)
             }
 
             // Disegno del disco
-            g.drawImageAt(disk, diskCentreX - disk.getWidth() / 2, diskCentreY - disk.getHeight() / 2);
+            g.drawImageAt(*discImage.get(), discCentreX - discImage->getWidth() / 2, discCentreY - static_cast<float>(discImage->getHeight()) / 2);
             // Altre operazioni di disegno...
 
             // Continua con altre operazioni di disegno...
@@ -202,15 +195,15 @@ void DeckGUI::paint(juce::Graphics& g)
         float desiredCentreY = 250.0f;
 
         // Calcola lo spostamento necessario per centrare l'immagine in (desiredCentreX, desiredCentreY)
-        float translateX = desiredCentreX - (arm.getWidth() / 2.0f)-10;
-        float translateY = desiredCentreY - (arm.getHeight() / 2.0f)+130;
+        float translateX = desiredCentreX - (armImage->getWidth() / 2.0f)-10;
+        float translateY = desiredCentreY - (armImage->getHeight() / 2.0f)+130;
 
         // Crea una trasformazione affine per traslare e poi ruotare l'immagine
         auto transform = juce::AffineTransform::translation(translateX, translateY)
             .rotated(juce::degreesToRadians(20.0f), desiredCentreX, desiredCentreY);
 
         // Disegna l'immagine con la trasformazione applicata
-        g.drawImageTransformed(arm, transform, false);
+        g.drawImageTransformed(*armImage.get(), transform, false);
 
 
         auto thumbnailBounds = juce::Rectangle<int>(10, 40, bounds.getWidth() - 20, 200); // Adatta questi valori al tuo layout
@@ -225,11 +218,7 @@ void DeckGUI::paint(juce::Graphics& g)
         auto& trackName = playlist->getChosenTrackSpecs();
         if (thumbnail.getNumChannels() > 0) {
             // Disegna la parte della thumbnail relativa all'audio non ancora riprodotto
-            juce::ColourGradient silverGradient(juce::Colours::white.withAlpha(0.8f), thumbnailBounds.getX(), thumbnailBounds.getY(),
-                juce::Colours::grey.withAlpha(0.5f), thumbnailBounds.getX(), thumbnailBounds.getBottom(), false);
-            g.setGradientFill(silverGradient);
-            g.drawRect(10.0f, 10.0f, (float)bounds.getWidth() - 20.0f, 230.0f, 5.0f);
-
+          
             g.setColour(juce::Colours::darkgrey);
             thumbnail.drawChannel(g, thumbnailBounds, 0, thumbnail.getTotalLength(), 0, 1.0f);
             g.setColour(juce::Colours::silver);
@@ -249,6 +238,12 @@ void DeckGUI::paint(juce::Graphics& g)
             g.setColour(juce::Colours::red);
             auto lineX = thumbnailBounds.getX() + playedWidth;
             g.drawLine(lineX, thumbnailBounds.getY(), lineX, thumbnailBounds.getBottom(), 2.0f);
+
+            juce::ColourGradient silverGradient(juce::Colours::white.withAlpha(0.8f), thumbnailBounds.getX(), thumbnailBounds.getY(),
+                juce::Colours::grey.withAlpha(0.5f), thumbnailBounds.getX(), thumbnailBounds.getBottom(), false);
+            g.setGradientFill(silverGradient);
+            g.drawRect(10.0f, 10.0f, (float)bounds.getWidth() - 20.0f, 230.0f, 5.0f);
+
         }
         else {
 

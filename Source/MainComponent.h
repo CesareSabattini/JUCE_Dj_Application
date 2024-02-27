@@ -22,18 +22,20 @@ public:
 
 
 private:
+    AppLAF appLAF;
     juce::Label otodecksLabel;
     DecksContainer container;
+    CommonEffects commonEffects;
     std::vector<std::unique_ptr<DjAudioPlayer>> players;
       std::vector<std::unique_ptr<DeckGUI>> deckGUIs;
     juce::MixerAudioSource mixer;
-    AppLAF appLAF;
+    
     juce::TextButton syncButton;
     juce::TextButton playButton;
     juce::TextButton pauseButton;
     juce::TextButton stopButton;
 
-    CommonEffects commonEffects;
+  
     juce::Viewport effectsViewport;
     juce::ShapeButton leftButton;
     juce::ShapeButton rightButton;
