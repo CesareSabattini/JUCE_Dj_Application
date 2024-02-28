@@ -1,11 +1,18 @@
 #include "MainComponent.h"
 
+
+/*
+The MainComponent serves as an interface to handle the whole application workflow:
+two traks can be played simoultaneausly, thanks to the juce::MixerAudioSource class.
+The audio effects are applied to the output audio, which starts from here, with the definition
+of the callbacks defined as member object-functions of the CommonEffect component.
+*/
 MainComponent::MainComponent(): leftButton("leftButton", juce::Colours::gold, juce::Colours::white,juce::Colours::grey),
 rightButton("rightButton", juce::Colours::gold, juce::Colours::white, juce::Colours::grey)
 {
+
    setSize(600, 400);
-   
-    setAudioChannels(2, 2);
+   setAudioChannels(2, 2);
 
     players.push_back(std::make_unique<DjAudioPlayer>());
     players.push_back(std::make_unique<DjAudioPlayer>());
@@ -14,9 +21,9 @@ rightButton("rightButton", juce::Colours::gold, juce::Colours::white, juce::Colo
 
     mixer.addInputSource(players[0].get(), true);
     mixer.addInputSource(players[1].get(), true);
+
     for (auto& deckGUI : deckGUIs)
     {
-
         container.addDeckGUI(std::move(deckGUI));
     }
     addAndMakeVisible(container);
@@ -68,27 +75,34 @@ rightButton("rightButton", juce::Colours::gold, juce::Colours::white, juce::Colo
     };
     addAndMakeVisible(stopButton);
     stopButton.setLookAndFeel(&appLAF);
-
-
-
     resized();
+
+    /*
+    This viewport enables the CommonEffect component to be partly
+    shown onscreen, to simulate a scrolling effect, mediated by the left and right shapeButtons.
+    */
     effectsViewport.setScrollBarsShown(false, false);
     addAndMakeVisible(effectsViewport);
     effectsViewport.setViewedComponent(&commonEffects, false);
-    // Dimensioni di esempio
 
 
-
-            // Crea il triangolo per il pulsante sinistro
+    /*
+   Definitions of the shapeButtons props. They're shaped by a juce::Path component.
+   The same process is followed for both the Button components.
+    */
     juce::Path leftTrianglePath;
-    leftTrianglePath.startNewSubPath(5, 5); // Punto in alto
-    leftTrianglePath.lineTo(0, 0); // Punto in basso a sinistra
-    leftTrianglePath.lineTo(5, -5); // Punto in basso a destra
-    leftTrianglePath.closeSubPath(); // Chiudi il percorso
+    leftTrianglePath.startNewSubPath(5, 5);
+    leftTrianglePath.lineTo(0, 0);
+    leftTrianglePath.lineTo(5, -5);
+    leftTrianglePath.closeSubPath();
 
+   
     leftButton.setShape(leftTrianglePath, true, true, true);
     addAndMakeVisible(leftButton);
 
+    /*
+   Definition of the callback method.
+   */
     leftButton.onClick = [this] {
         effectsViewport.setViewPosition(effectsViewport.getViewPositionX()-effectsViewport.getWidth(), effectsViewport.getViewPositionY());
     };
@@ -96,10 +110,10 @@ rightButton("rightButton", juce::Colours::gold, juce::Colours::white, juce::Colo
 
 
     juce::Path rightTrianglePath;
-    rightTrianglePath.startNewSubPath(0, 5);  // Punto in alto a sinistra
-    rightTrianglePath.lineTo(0, -5); // Punto in alto a destra
-    rightTrianglePath.lineTo(5, 0);  // Punto in basso a sinistra
-    rightTrianglePath.closeSubPath(); // Chiudi il percorso
+    rightTrianglePath.startNewSubPath(0, 5);
+    rightTrianglePath.lineTo(0, -5);
+    rightTrianglePath.lineTo(5, 0);
+    rightTrianglePath.closeSubPath();
 
 
     rightButton.setShape(rightTrianglePath, true, true, true);
@@ -109,6 +123,9 @@ rightButton("rightButton", juce::Colours::gold, juce::Colours::white, juce::Colo
     };
   
 
+    /*
+    CommonEffects' callbacks definitions.
+    */
     commonEffects.onParametersChanged = [this](const juce::Reverb::Parameters& params) {
         for (auto& player : players) {
             player->setReverbParameters(params);
@@ -154,21 +171,6 @@ void MainComponent::releaseResources()
     }
 }
 
-
-void shadeRect(juce::Graphics& g, juce::Rectangle<float> rect, juce::Colour color) {
-    juce::Colour shadowColor3 = color.darker(0.8);
-    g.setColour(shadowColor3);
-    g.fillRect(rect.reduced(-6));
-    juce::Colour shadowColor2 = color.darker(0.5);
-    g.setColour(shadowColor2);
-    g.fillRect(rect.reduced(-4));
-    juce::Colour shadowColor1 = color.darker(0.2);
-    g.setColour(shadowColor1);
-    g.fillRect(rect.reduced(-2));
-    g.setColour(color);
-    g.fillRect(rect);
-}
-
 void MainComponent::paint(juce::Graphics& g)
 {
     g.fillAll(juce::Colour(30,30,30));
@@ -177,20 +179,29 @@ void MainComponent::paint(juce::Graphics& g)
 
 void MainComponent::resized()
 {
-
-    const int topGap = 40;
+    const int topGap = 140;
+    const int littleGap = 10;
     const int middleGap = 15;
-    otodecksLabel.setBounds((getWidth()-250)/2+20, 20, 210,80);
-    container.setBounds(0, 0,getWidth(), getHeight());
-    syncButton.setBounds((getWidth() - 250) / 2 + middleGap, 100 + topGap, (250 - 3 * middleGap)/2, 60);
-    playButton.setBounds(syncButton.getRight() + middleGap, 100 + topGap, (250 - 3 * middleGap) / 2, 60);
-    pauseButton.setBounds((getWidth() - 250) / 2 + middleGap, playButton.getBottom() + middleGap, (250 - 3 * middleGap) / 2, 60);
-    stopButton.setBounds(pauseButton.getRight() + middleGap, playButton.getBottom() + middleGap, (250 - 3 * middleGap) / 2, 60);
+    const int wideGap = 20;
+    const int inBetweenWidth = 250;
+    const int labelWidth = 210;
+    const int labelHeight = 80;
+    const int buttonHeight = 60;
+    const int shapeButtonWidth = 25;
+    const int shapeButtonHeight= 25;
+    const int viewportY = 340;
 
-    effectsViewport.setBounds((getWidth() - 250) / 2, 340, 250, getHeight() - 310);
-    commonEffects.setSize(effectsViewport.getWidth()*3, effectsViewport.getHeight());
-    leftButton.setBounds((getWidth() - 250) / 2+20, 350, 25, 25);
-    rightButton.setBounds((getWidth()-250) / 2+ 200, 350, 25, 25);
+    otodecksLabel.setBounds((getWidth()- inBetweenWidth)/2+ wideGap, wideGap, labelWidth, labelHeight);
+    container.setBounds(0, 0,getWidth(), getHeight());
+    syncButton.setBounds((getWidth() - inBetweenWidth) / 2 + middleGap,topGap, (inBetweenWidth - 3 * middleGap)/2, buttonHeight);
+    playButton.setBounds(syncButton.getRight() + middleGap,topGap, (inBetweenWidth - 3 * middleGap) / 2, buttonHeight);
+    pauseButton.setBounds((getWidth() - inBetweenWidth) / 2 + middleGap, playButton.getBottom() + middleGap, (inBetweenWidth - 3 * middleGap) / 2, buttonHeight);
+    stopButton.setBounds(pauseButton.getRight() + middleGap, playButton.getBottom() + middleGap, (inBetweenWidth - 3 * middleGap) / 2, buttonHeight);
+
+    effectsViewport.setBounds((getWidth() - inBetweenWidth) / 2, viewportY, inBetweenWidth, getHeight() - viewportY);
+    commonEffects.setSize(effectsViewport.getWidth() * 3, effectsViewport.getHeight());
+    leftButton.setBounds(effectsViewport.getBounds().getTopLeft().getX()+wideGap, viewportY + littleGap, shapeButtonWidth, shapeButtonHeight);
+    rightButton.setBounds(effectsViewport.getBounds().getTopRight().getX() - 2*wideGap-littleGap/2, viewportY + littleGap, shapeButtonWidth, shapeButtonHeight);
 }
 
 

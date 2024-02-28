@@ -1,34 +1,18 @@
-/*
-  ==============================================================================
-
-    Playlist.h
-    Created: 25 Feb 2024 10:56:58am
-    Author:  cesar
-
-  ==============================================================================
-*/
-
 #pragma once
 
 #include <JuceHeader.h>
 #include"DjAudioPlayer.h"
 #include"AppStyle.h"
 
-//==============================================================================
-/*
-*/
-
 struct Track {
     juce::String name;
-    juce::String artist; // Potresti dover estrarre questo dai metadati, se disponibili
+    juce::String artist;
     double lengthInSeconds;
     juce::String path;
 
     Track(const juce::String& name, const juce::String& artist, double lengthInSeconds, const juce::String& path)
         : name(name), artist(artist), lengthInSeconds(lengthInSeconds), path(path) {}
 };
-
-
 
 class Playlist  : public juce::Component,
     public juce::TableListBoxModel,
@@ -50,21 +34,19 @@ public:
     void loadTracksFromDirectory();
 
     bool isInterestedInFileDrag(const juce::StringArray& files) override;
-
     void filesDropped(const juce::StringArray& files, int x, int y) override;
 
-    Track getChosenTrackSpecs() {
-        return chosenTrack;
-    }
+    Track getChosenTrackSpecs();
 private:
+
     DjAudioPlayer* player;
     std::unique_ptr<juce::FileChooser> chooser;
     std::unique_ptr<AppLAF> appLAF;
     juce::TableListBox tableComponent;
     std::vector<Track> tracks;
     Track chosenTrack;
-    juce::TextButton addTrackButton{ "Add Track" };
-
+    juce::TextButton addTrackButton;
+    juce::TextButton closeButton;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Playlist)
 };
 

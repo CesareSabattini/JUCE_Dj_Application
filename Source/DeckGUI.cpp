@@ -3,15 +3,15 @@
 
 DeckGUI::DeckGUI(DjAudioPlayer* audioPlayer) : djAudioPlayer{ audioPlayer }, playlist(std::make_unique<Playlist>(audioPlayer))
 {
+    
 
-    //
+    //Initialize ptrs to the images defined in AppStyle class.
      
     discImage = std::make_unique<juce::Image>(appLAF.getDiscImage()->rescaled(appLAF.getDiscImage()->getWidth() / 4, appLAF.getDiscImage()->getHeight() / 4));
     armImage = std::make_unique<juce::Image>(appLAF.getArmImage()->rescaled(appLAF.getArmImage()->getWidth() / 5, appLAF.getArmImage()->getHeight() / 5));
 
 
-     
-
+     //define buttons properties.
       playButton.setLookAndFeel(&appLAF);
       playButton.setButtonText("PLAY");
       playButton.addListener(this);
@@ -33,6 +33,8 @@ DeckGUI::DeckGUI(DjAudioPlayer* audioPlayer) : djAudioPlayer{ audioPlayer }, pla
     loadButton.addListener(this);;
     addAndMakeVisible(loadButton);
 
+
+    //define slider properties
     addAndMakeVisible(volSlider);
     volSlider.setSliderStyle(juce::Slider::LinearVertical);
     volSlider.setLookAndFeel(&appLAF);
@@ -57,11 +59,15 @@ DeckGUI::DeckGUI(DjAudioPlayer* audioPlayer) : djAudioPlayer{ audioPlayer }, pla
     posSlider.setNumDecimalPlacesToDisplay(1);
     posSlider.setValue(0.0);
 
+    //add playlist component to the UI and set it invisible by default.
     addAndMakeVisible(playlist.get());
     playlist->setVisible(false);
+
+    //start the timer and set the callback each 60 ms.
     startTimerHz(60);
 }
 
+//Override buttonClicked function, to set various callbacks every time a button is clicked.
 void DeckGUI::buttonClicked(juce::Button* button)
 {
     if (button == &playButton)
@@ -97,9 +103,10 @@ void DeckGUI::buttonClicked(juce::Button* button)
 
 DeckGUI::~DeckGUI()
 {
+   
 }
 
-
+//Override sliderValueChanged function, to set various callbacks every time a slider gets scrolled.
 void DeckGUI::sliderValueChanged(juce::Slider* slider) {
 
     if (slider == &volSlider) {
@@ -121,103 +128,117 @@ void DeckGUI::paint(juce::Graphics& g)
 {
 
    if(!playlist->isVisible()){
+       //definitions of local variables.
         auto bounds = getLocalBounds().toFloat();
+        auto discCentreX = 200;
+        auto discCentreY = bounds.getCentreY() + 50;
+        auto imageCentre = juce::Point<int>(discCentreX, discCentreY);
+        float radius = discImage->getHeight() / 2.0f;
+        juce::Point<float> centre(discCentreX, discCentreY);
+        float outerRadius = discImage->getHeight() / 2.0f + 20.0f;
+        float innerRadius = outerRadius - 20.0f;
+        juce::Path ringPath;
+        ringPath.addEllipse(centre.x - outerRadius, centre.y - outerRadius, 2 * outerRadius, 2 * outerRadius);
+        ringPath.addEllipse(centre.x - innerRadius, centre.y - innerRadius, 2 * innerRadius, 2 * innerRadius);
+        juce::Path goldRingPath;
+        goldRingPath.addEllipse(centre.x - radius, centre.y - radius, 2 * radius, 2 * radius);
+        float desiredCentreX = 400.0f;
+        float desiredCentreY = 250.0f;
+        float translateX = desiredCentreX - (armImage->getWidth() / 2.0f) - 10;
+        float translateY = desiredCentreY - (armImage->getHeight() / 2.0f) + 130;
+        auto thumbnailBounds = juce::Rectangle<int>(10, 40, bounds.getWidth() - 20, 200);
+        auto trackSpecsBounds = juce::Rectangle<int>(10, 10, bounds.getWidth() - 20, 30);
+        auto& thumbnail = djAudioPlayer->getThumbnail();
+        auto& trackName = playlist->getChosenTrackSpecs();
+        auto audioPosition = (float)djAudioPlayer->getTransportSource()->getCurrentPosition();
+        auto proportionPlayed = audioPosition / thumbnail.getTotalLength();
+        auto playedWidth = proportionPlayed * thumbnailBounds.getWidth();
 
-        // Definizione del gradiente e disegno dello sfondo
+
         juce::ColourGradient gradient(
-            juce::Colour::fromRGB(50, 50, 50), // Grigio scuro come colore di partenza
+            AppColours::customDarkGrey,
             bounds.getTopLeft(),
-            juce::Colour::fromRGB(25, 25, 25), // Ancora più scuro, vicino al nero, come colore di fine
+            AppColours::customDarkerGrey,
             bounds.getBottomRight(),
             false);
+        juce::ColourGradient greyGradient(juce::Colours::grey, centre.withY(centre.y - outerRadius),
+            juce::Colours::lightgrey, centre.withY(centre.y + outerRadius), false);
+        greyGradient.addColour(0.5, juce::Colours::darkgrey);
+        juce::Colour goldStart(255, 215, 0);
+        juce::Colour goldEnd(178, 145, 0);
+        juce::ColourGradient goldGradient(goldStart, centre, goldEnd, centre.withY(centre.y - outerRadius), false);
+        juce::ColourGradient thumbnailGradient(AppColours::customDarkGrey, thumbnailBounds.getX(), thumbnailBounds.getY(),
+            AppColours::customDarkerGrey, thumbnailBounds.getX(), thumbnailBounds.getBottom(), false);
+        auto lineX = thumbnailBounds.getX() + playedWidth;
+        juce::ColourGradient silverGradient(juce::Colours::white.withAlpha(0.8f), thumbnailBounds.getX(), thumbnailBounds.getY(),
+            juce::Colours::grey.withAlpha(0.5f), thumbnailBounds.getX(), thumbnailBounds.getBottom(), false);
 
+
+        //fill the background with the custom gradient.
         g.setGradientFill(gradient);
         g.fillRect(bounds);
         g.setColour(juce::Colours::black);
 
         if (!discImage->isNull()) {
+            //save the state, so that it will be reset to default after the transform process.
             g.saveState();
-            auto discCentreX = 200;
-            auto discCentreY = bounds.getCentreY()+50;
-            auto imageCentre = juce::Point<int>(discCentreX, discCentreY);
 
-            // Applica una trasformazione per ruotare tutto attorno al suo centro
+            /*
+            these are the steps to achieve disc rotation:
+            1) define float rotationAngle member variable, to store its active status. It's incremented in the timer cb.
+            2) Draw both the silvered and the golden ring.
+            3) Draw the shadowed ovals and modify the shadow in relation to the angle, to simulate a light effect.
+            perform the rotation at each repaint.
+            4) Lastly, draw the disc image.
+            */
             g.addTransform(juce::AffineTransform::rotation(rotationAngle, imageCentre.getX(), imageCentre.getY()));
-
-            float radius = discImage->getHeight() / 2.0f;
-            juce::Point<float> centre(discCentreX, discCentreY);
-
-            // Creazione del gradiente per il cerchio metallizzato
-            float outerRadius = discImage->getHeight() / 2.0f + 20.0f;
-            float innerRadius = outerRadius - 20.0f;
-
-            // Miglioramento del gradiente con una transizione più complessa
-            juce::ColourGradient greyGradient(juce::Colours::grey, centre.withY(centre.y - outerRadius),
-                juce::Colours::lightgrey, centre.withY(centre.y + outerRadius), false);
-            greyGradient.addColour(0.5, juce::Colours::darkgrey); // Transizione centrale più scura
-
-            juce::Path ringPath;
-            ringPath.addEllipse(centre.x - outerRadius, centre.y - outerRadius, 2 * outerRadius, 2 * outerRadius);
-            ringPath.addEllipse(centre.x - innerRadius, centre.y - innerRadius, 2 * innerRadius, 2 * innerRadius);
 
             g.setGradientFill(greyGradient);
             g.fillPath(ringPath);
 
-            // Corona circolare dorata
-            juce::Colour goldStart(255, 215, 0); // Oro chiaro
-            juce::Colour goldEnd(178, 145, 0); // Oro scuro
-            juce::ColourGradient goldGradient(goldStart, centre, goldEnd, centre.withY(centre.y - outerRadius), false);
-            juce::Path goldRingPath;
-            goldRingPath.addEllipse(centre.x - radius, centre.y - radius, 2 * radius, 2 * radius);
             g.setGradientFill(goldGradient);
             g.strokePath(goldRingPath, juce::PathStrokeType(4.0f));
 
-            // Disegno dei piccoli ovali (rientranze)
             for (int i = 0; i < 40; ++i) {
                 float angle = juce::MathConstants<float>::twoPi * i / 40;
                 juce::Point<float> ovalCentre = centre + juce::Point<float>(std::cos(angle), std::sin(angle)) * (innerRadius + 10.0f);
 
                 juce::ColourGradient ovalGradient(juce::Colours::darkgrey, ovalCentre.translated(-2, -2), juce::Colours::lightgrey, ovalCentre.translated(2, 2), false);
                 g.setGradientFill(ovalGradient);
-                g.fillEllipse(ovalCentre.x - 5, ovalCentre.y - 5, 10, 10); // Raggio aggiornato a 5.0f
+                g.fillEllipse(ovalCentre.x - 5, ovalCentre.y - 5, 10, 10);
             }
-
-            // Disegno del disco
+            
             g.drawImageAt(*discImage.get(), discCentreX - discImage->getWidth() / 2, discCentreY - static_cast<float>(discImage->getHeight()) / 2);
-            // Altre operazioni di disegno...
-
-            // Continua con altre operazioni di disegno...
             g.restoreState();
 
         }
-        // Coordinate desiderate per il centro dell'immagine
-        float desiredCentreX = 400.0f;
-        float desiredCentreY = 250.0f;
-
-        // Calcola lo spostamento necessario per centrare l'immagine in (desiredCentreX, desiredCentreY)
-        float translateX = desiredCentreX - (armImage->getWidth() / 2.0f)-10;
-        float translateY = desiredCentreY - (armImage->getHeight() / 2.0f)+130;
-
-        // Crea una trasformazione affine per traslare e poi ruotare l'immagine
+        /*
+        Define a juce::AffineTransform combining a translation and a rotation, to draw the arm image.
+        */
         auto transform = juce::AffineTransform::translation(translateX, translateY)
             .rotated(juce::degreesToRadians(20.0f), desiredCentreX, desiredCentreY);
-
-        // Disegna l'immagine con la trasformazione applicata
         g.drawImageTransformed(*armImage.get(), transform, false);
 
+        /*
+       Draw the thumbnail rectangle.
+       1) If its source is initialized to one having
+       at least one active channel:
+       1.1) Draw the thumbnail's track.
+       1.2) Draw the specifications rectangle above and insert the file name inside it,
+       with a juce::JustificationType::centred.
+       1.3) Dynamically draw the thumbnail with a golden pen, only for the already played section.
+       This will return a pleasant looking effect and separate the two parts of the track.
+       1.4) Draw the red marker, which follows the track.
 
-        auto thumbnailBounds = juce::Rectangle<int>(10, 40, bounds.getWidth() - 20, 200); // Adatta questi valori al tuo layout
-        auto trackSpecsBounds = juce::Rectangle<int>(10, 10, bounds.getWidth() - 20, 30);
-        // Disegna lo sfondo della thumbnail
-        juce::ColourGradient thumbnailGradient(juce::Colour(54, 54, 54), thumbnailBounds.getX(), thumbnailBounds.getY(),
-            juce::Colour(30, 30, 30), thumbnailBounds.getX(), thumbnailBounds.getBottom(), false);
+       2) If, instead, there's no available channel:
+       2.1) Draw a background gradient, similiar to the GUI's background shade.
+       2.2) Draw a fitted text, which serves as an instruction, inducing the track selection.
+        
+        */
         g.setGradientFill(thumbnailGradient); 
         g.fillRect(thumbnailBounds);
        
-        auto& thumbnail = djAudioPlayer->getThumbnail();
-        auto& trackName = playlist->getChosenTrackSpecs();
         if (thumbnail.getNumChannels() > 0) {
-            // Disegna la parte della thumbnail relativa all'audio non ancora riprodotto
           
             g.setColour(juce::Colours::darkgrey);
             thumbnail.drawChannel(g, thumbnailBounds, 0, thumbnail.getTotalLength(), 0, 1.0f);
@@ -226,39 +247,30 @@ void DeckGUI::paint(juce::Graphics& g)
             g.setColour(juce::Colours::black);
             g.drawFittedText(trackName.name,trackSpecsBounds,juce::Justification::centred,1);
             
-            // Calcola la larghezza della parte riprodotta e disegnala in oro
-            auto audioPosition = (float)djAudioPlayer->getTransportSource()->getCurrentPosition();
-            auto proportionPlayed = audioPosition / thumbnail.getTotalLength();
-            auto playedWidth = proportionPlayed * thumbnailBounds.getWidth();
 
             g.setColour(juce::Colour(246, 207, 0));
             thumbnail.drawChannel(g, juce::Rectangle<int>(thumbnailBounds.getX(), thumbnailBounds.getY(), playedWidth, thumbnailBounds.getHeight()), 0, audioPosition, 0, 1.0f);
 
-            // Disegna l'indicatore della posizione corrente
             g.setColour(juce::Colours::red);
-            auto lineX = thumbnailBounds.getX() + playedWidth;
             g.drawLine(lineX, thumbnailBounds.getY(), lineX, thumbnailBounds.getBottom(), 2.0f);
 
-            juce::ColourGradient silverGradient(juce::Colours::white.withAlpha(0.8f), thumbnailBounds.getX(), thumbnailBounds.getY(),
-                juce::Colours::grey.withAlpha(0.5f), thumbnailBounds.getX(), thumbnailBounds.getBottom(), false);
             g.setGradientFill(silverGradient);
             g.drawRect(10.0f, 10.0f, (float)bounds.getWidth() - 20.0f, 230.0f, 5.0f);
 
         }
         else {
-
-            // Nessun file caricato, mostra solo lo sfondo
-            juce::ColourGradient gradient(juce::Colour(54, 54, 54), thumbnailBounds.getX(), thumbnailBounds.getY(),
-                juce::Colour(30, 30, 30), thumbnailBounds.getX(), thumbnailBounds.getBottom(), false);
-            g.setGradientFill(gradient);
-            g.fillRect(thumbnailBounds); juce::ColourGradient silverGradient(juce::Colours::white.withAlpha(0.8f), thumbnailBounds.getX(), thumbnailBounds.getY(),
+    
+            juce::ColourGradient gradient(AppColours::customDarkGrey, thumbnailBounds.getX(), thumbnailBounds.getY(),
+                AppColours::customGrey, thumbnailBounds.getX(), thumbnailBounds.getBottom(), false);
+            juce::ColourGradient silverGradient(juce::Colours::white.withAlpha(0.8f), thumbnailBounds.getX(), thumbnailBounds.getY(),
                 juce::Colours::grey.withAlpha(0.5f), thumbnailBounds.getX(), thumbnailBounds.getBottom(), false);
-            g.setGradientFill(silverGradient);
 
+
+            g.setGradientFill(gradient);
+            g.fillRect(thumbnailBounds);
+            g.setGradientFill(silverGradient);
            g.setGradientFill(silverGradient);
             g.drawRect(thumbnailBounds.reduced(1.0f),5);
-
-         
             g.setColour(juce::Colours::gold);
             g.setFont(20.0f);
             g.drawFittedText("Choose an audio file", thumbnailBounds, juce::Justification::centred, 1);
@@ -270,21 +282,17 @@ void DeckGUI::paint(juce::Graphics& g)
    
 }
 
-
+/*
+In the timer cb method the rotation parameters are used to increment the rotation angle at each repaint:
+the angular speed is set to 2*pi rad/s. The rotation angle is periodically decremented, according to the sine and cosine domains.
+*/
 void DeckGUI::timerCallback() {
     if (!playlist->isVisible()) {
+
         if (djAudioPlayer->getTransportSource()->isPlaying()) {
-            const float rotationSpeed = 2 * juce::MathConstants<float>::twoPi; // Radianti al secondo
-            const float frameTime = 1.0f / 60.0f; // Tempo per frame a 60 FPS
-
-            // Aggiorna l'angolo di rotazione
             rotationAngle += rotationSpeed * frameTime;
-
-            // Assicurati che l'angolo rimanga valido
             if (rotationAngle >= juce::MathConstants<float>::twoPi)
                 rotationAngle -= juce::MathConstants<float>::twoPi;
-
-            // Richiedi il ridisegno del componente
             repaint();
         }
         else {
@@ -296,20 +304,19 @@ void DeckGUI::timerCallback() {
 
 void DeckGUI::resized()
 {
-    const int labelWidth = 110;
-    const int labelHeight = 30;
-    int buttonHeight = 60;
-    int buttonGap = 20;
-    int buttonWidth = (getWidth()-5*buttonGap) / 4;
-    int sliderWidth = 80;
-    int sliderHeight = 250;
-    const int sliderLabelWidth = 30;
-    const int sliderLabelHeight = 20;
-    int sliderGap = 10;
-    float buttonY = getHeight() - 100;
+    //local variables definitions
+    const float labelWidth = 110.0f;
+    const float labelHeight = 30.0f;
+    const float buttonHeight = 60.0f;
+    const float buttonGap = 20.0f;
+    float buttonWidth = (getWidth()-5*buttonGap) / 4;
+    const float sliderWidth = 80.0f;
+    float sliderHeight = 250.0f;
+    const float sliderLabelWidth = 30.0f;
+    const float sliderLabelHeight = 20.0f;
+    float sliderGap = 10.0f;
+    float buttonY = static_cast<float>(getHeight()) - 100.0f;
 
-
-   
    
     playButton.setBounds(buttonGap, buttonY, buttonWidth, buttonHeight);
     pauseButton.setBounds(playButton.getRight()+buttonGap, buttonY, buttonWidth, buttonHeight);
@@ -317,8 +324,6 @@ void DeckGUI::resized()
 
     loadButton.setBounds(stopButton.getRight() + buttonGap, buttonY, buttonWidth, buttonHeight);
    
-   
-    
     volSlider.setBounds(getLocalBounds().getCentreX()+sliderWidth, getLocalBounds().getCentreY() - sliderHeight / 2+100, sliderWidth, sliderHeight);
     speedSlider.setBounds(volSlider.getRight(), getLocalBounds().getCentreY() - sliderHeight / 2+100, sliderWidth, sliderHeight);
     posSlider.setBounds(speedSlider.getRight(), getLocalBounds().getCentreY() - sliderHeight / 2+100, sliderWidth, sliderHeight);
@@ -330,6 +335,9 @@ void DeckGUI::resized()
     playlist->setBounds(50, 50, getWidth() - 100, getHeight() - 100);
 }
 
+/*
+method that handles the Playlist component display.
+*/
 void DeckGUI::showPlaylist() {
     playlist->setVisible(true);
     playlist->toFront(true);

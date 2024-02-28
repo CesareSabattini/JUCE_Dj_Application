@@ -5,8 +5,11 @@
 #include"AppStyle.h"
 #include"DjAudioPlayer.h"
 
+/*
+Basic structure that unifies the three necessary delay params.
+*/
 struct DelayParameters {
-    float delayTime = 500.0f; // In millisecondi
+    float delayTime = 500.0f;
     float feedback = 0.5f;
     float wetLevel = 0.5f;
 };
@@ -23,38 +26,16 @@ public:
     std::function<void(const juce::Reverb::Parameters&)> onParametersChanged;
     std::function<void(const DelayParameters&)> onDelayParametersChanged;
 
-    void CommonEffects::sliderValueChanged(juce::Slider* slider) {
-        if (slider == &roomSlider || slider == &dampingSlider || slider == &wetLevelSlider || slider == &dryLevelSlider) {
-            if (onParametersChanged) {
-                juce::Reverb::Parameters params;
-                params.roomSize = roomSlider.getValue();
-                params.damping = dampingSlider.getValue();
-                params.wetLevel = wetLevelSlider.getValue();
-                params.dryLevel = dryLevelSlider.getValue();
-
-                onParametersChanged(params);
-            }
-        }
-        else if (slider == &delayTime || slider == &delayFeedback || slider == &delayWet) {
-            if (onDelayParametersChanged) {
-                DelayParameters params;
-                params.delayTime = delayTime.getValue();
-                params.feedback = delayFeedback.getValue();
-                params.wetLevel = delayWet.getValue();
-
-                onDelayParametersChanged(params);
-            }
-        }
-    }
-
-
+    void sliderValueChanged(juce::Slider* slider) override;
 
 
 private:
     DjAudioPlayer* djAudioPlayer;
+
     AppLAF appLAF;
     juce::Label reverbLabel;
     juce::Label delayLabel;
+    juce::Label comingSoonLabel;
     juce::Viewport viewport;
 
     juce::Slider roomSlider;
@@ -66,10 +47,6 @@ private:
     juce::Slider delayTime;
     juce::Slider delayFeedback;
     juce::Slider delayWet;
-
-
-
-
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (CommonEffects)
 };

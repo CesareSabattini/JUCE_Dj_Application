@@ -4,24 +4,29 @@
 
 Playlist::Playlist(DjAudioPlayer* audioPlayer) : player{audioPlayer}, chosenTrack("","",0.0,""){
     loadTracksFromDirectory();
-        // Configura il pulsante "Add Track"
+
+   
         addTrackButton.setButtonText("+");
         addTrackButton.onClick = [this] { addTrack(); };
         addAndMakeVisible(addTrackButton);
         addTrackButton.setLookAndFeel(appLAF.get());
 
-        // Inizializza e configura la tabella
+        closeButton.setButtonText("Close");
+        closeButton.onClick = [this] {
+            setVisible(false);
+        };
+        addAndMakeVisible(closeButton);
+        closeButton.setLookAndFeel(appLAF.get());
+
         tableComponent.setModel(this);
         addAndMakeVisible(tableComponent);
 
-        // Imposta le colonne
         tableComponent.getHeader().addColumn("Track Name", 1, 100);
         tableComponent.getHeader().addColumn("Artist", 2, 100);
         tableComponent.getHeader().addColumn("Length", 3, 100);
         tableComponent.getHeader().addColumn("Path", 4, 100);
         setLookAndFeel(appLAF.get());
 
-        
     }
 
 Playlist::~Playlist()
@@ -31,12 +36,19 @@ Playlist::~Playlist()
 
 void Playlist::paint (juce::Graphics& g)
 {
-    g.fillAll(juce::Colours::black);
 }
 
-void Playlist::addTrack() {
 
-    
+
+/*
+Starting a parallel thread, a window to select audio files from the device is opened.
+In the lauchAsync function, a callback passed to the constructor, defining the behaviour
+after the selection: a playlist directory is created in the project folder and the chosen file is copied here, 
+to enable a permanent local storage.
+Then,the metadata of the file are extracted and pushed in the tracks member vector, and are then shown on screen.
+*/
+
+void Playlist::addTrack() {
 
     chooser = std::make_unique<juce::FileChooser>("Select a Wave file to play...",
         juce::File{}, "*.wav");
@@ -46,24 +58,16 @@ void Playlist::addTrack() {
         {
             auto file = fc.getResult();
             if (file != juce::File{}) {
-                // Costruisci il percorso della directory "Playlist" nella directory del progetto
                 auto playlistDir = juce::File::getCurrentWorkingDirectory().getChildFile("Playlist");
                 if (!playlistDir.exists()) {
-                    playlistDir.createDirectory(); // Crea la directory se non esiste
+                    playlistDir.createDirectory();
                 }
 
-                // Costruisci il percorso del file di destinazione all'interno della directory "Playlist"
                 auto destinationFile = playlistDir.getChildFile(file.getFileName());
 
-                // Copia il file selezionato nella directory "Playlist", sovrascrivendo se esiste
                 file.copyFileTo(destinationFile);
-
-                auto name = destinationFile.getFileNameWithoutExtension();
-                auto lengthInSeconds = destinationFile.getSize() / 1024.0; // Esempio di placeholder
-                auto path = destinationFile.getFullPathName();
                 tracks = std::vector<Track>();
                 loadTracksFromDirectory();
-                // Potrebbe essere necessario aggiornare l'UI per riflettere i nuovi file aggiunti
                 tableComponent.updateContent();
             }
 
@@ -76,9 +80,15 @@ void Playlist::addTrack() {
 
 
 void Playlist::resized() {
+    const int borderGap = 20;
+    const int buttonWidth = 80;
+    const int buttonHeight = 30;
     auto area = getLocalBounds();
-    addTrackButton.setBounds(getRight()-130, 5, 80, 20);
-    tableComponent.setBounds(area.reduced(40));
+
+
+    closeButton.setBounds(getX() + borderGap, borderGap, buttonWidth, buttonHeight);
+    addTrackButton.setBounds(getRight()-borderGap-buttonWidth, borderGap, buttonWidth, buttonHeight);
+    tableComponent.setBounds(area.reduced(3*borderGap));
 }
 
 
@@ -89,11 +99,8 @@ int Playlist::getNumRows()
 
 void Playlist::paintRowBackground(juce::Graphics& g, int rowNumber, int width, int height, bool rowIsSelected)  {
     if (rowIsSelected){ g.fillAll(juce::Colours::lightblue); }
-      
     else{ g.fillAll(juce::Colours::darkgrey); }
-      
-
-    g.setColour(juce::Colours::gold); // Imposta il colore della penna a dorato
+    g.setColour(juce::Colours::gold);
     g.drawLine(0, height - 1, width, height - 1, 1);
 }
 
@@ -105,7 +112,7 @@ void Playlist::paintCell(juce::Graphics& g, int rowNumber, int columnId, int wid
     switch (columnId) {
     case 1: text = track.name; break;
     case 2: text = track.artist; break;
-    case 3: text = juce::String(track.lengthInSeconds, 2) + "s"; break; // Formato "xx.yy s"
+    case 3: text = juce::String(track.lengthInSeconds, 2) + "s"; break;
     case 4: text = track.path; break;
     default: break;
     }
@@ -122,8 +129,7 @@ void Playlist::loadTracksFromDirectory() {
         while (iter.next()) {
             auto file = iter.getFile();
             auto name = file.getFileNameWithoutExtension();
-            // Qui assumiamo "Unknown" come artista, e usiamo il file size come placeholder per la lunghezza
-            auto lengthInSeconds = file.getSize() / 1024.0; // Esempio di placeholder, sostituisci con la lunghezza reale se possibile
+            auto lengthInSeconds = file.getSize() / 1024.0;
             auto path = file.getFullPathName();
 
             tracks.emplace_back(name, "Unknown", lengthInSeconds, path);
@@ -131,43 +137,60 @@ void Playlist::loadTracksFromDirectory() {
     }
 }
 
+
+/*
+When a row is clicked, the DjAudioPlayer::loadFileAndPlay() is called, and the transportSource is initialized
+to the audioFile.Then this component is removed from the screen viewport.
+If the audio file isn't found, or is corrupted, the playlist is only set invisible.
+*/
 void Playlist::selectedRowsChanged(int lastRowSelected) {
     if (lastRowSelected >= 0 && lastRowSelected < tracks.size()) {
         auto& selectedTrack = tracks[lastRowSelected];
         juce::File audioFile(selectedTrack.path);
 
         if (audioFile.existsAsFile()) {
-            // Chiama un metodo sul tuo DjAudioPlayer per caricare e riprodurre il file
+
             chosenTrack = selectedTrack;
             player->loadFileAndPlay(audioFile);
             setVisible(false);
         }
         else {
-            juce::AlertWindow::showMessageBoxAsync(juce::AlertWindow::WarningIcon,
-                "File Not Found",
-                "The selected audio file could not be found.");
+            setVisible(false);
         }
     }
 }
 
+
+/*
+Definitions of the pure virtual method of juce::FileDragAndDropTarget class.
+*/
 bool Playlist::isInterestedInFileDrag(const juce::StringArray& files){
-    // Qui puoi verificare se i file trascinati sono di un tipo che la tua app può gestire
-    // Per semplicità, restituiamo true per indicare interesse per qualsiasi file
     return true;
 }
-
+/*
+After a file is dropped a procedure similiar to the one followed in the addTrack method, is exhecuted.
+*/
 void Playlist::filesDropped(const juce::StringArray& files, int x, int y){
     for (const auto& file : files) {
         juce::File audioFile(file);
         if (audioFile.existsAsFile()) {
-            // Aggiungi il file alla tua playlist
-            auto name = audioFile.getFileNameWithoutExtension();
-            auto lengthInSeconds = audioFile.getSize() / 1024.0; // Esempio di placeholder
-            auto path = audioFile.getFullPathName();
-            tracks.emplace_back(name, "Unknown", lengthInSeconds, path);
 
-            // Potrebbe essere necessario aggiornare l'UI per riflettere i nuovi file aggiunti
+            auto playlistDir = juce::File::getCurrentWorkingDirectory().getChildFile("Playlist");
+            if (!playlistDir.exists()) {
+                playlistDir.createDirectory();
+            }
+
+            auto destinationFile = playlistDir.getChildFile(audioFile.getFileName());
+
+            audioFile.copyFileTo(destinationFile);
+            tracks = std::vector<Track>();
+            loadTracksFromDirectory();
             tableComponent.updateContent();
+
         }
     }
+}
+
+Track Playlist::getChosenTrackSpecs() {
+    return chosenTrack;
 }

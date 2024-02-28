@@ -1,17 +1,14 @@
-/*
-  ==============================================================================
-
-    CommonEffects.cpp
-    Created: 25 Feb 2024 6:11:34pm
-    Author:  cesar
-
-  ==============================================================================
-*/
-
 #include <JuceHeader.h>
 #include "CommonEffects.h"
 
-//==============================================================================
+
+/*
+In the constructure the labels and the slider that compose the interface are initialized.
+The sliders' ranges, styles, textBoxStyles are set the CommonEffect class is configured as their listener.
+The callbacks are declared in the public scope and defined in the MainComponent.
+Like in the other user defined components, the pre-defined ones are styled using the LookAndFeel_V4 inherithed
+class AppLAF.
+*/
 CommonEffects::CommonEffects()
 {
     addAndMakeVisible(delayLabel);
@@ -21,6 +18,9 @@ CommonEffects::CommonEffects()
     reverbLabel.setText("REVERB", juce::dontSendNotification);
     reverbLabel.setLookAndFeel(&appLAF);
 
+    addAndMakeVisible(comingSoonLabel);
+    comingSoonLabel.setText("MORE EFFECTS COMING SOON...", juce::dontSendNotification);
+    comingSoonLabel.setLookAndFeel(&appLAF);
 
     roomSlider.setRange(0.0f, 1.0f, 0.05f);
     dampingSlider.setRange(0.0f, 1.0f, 0.05f);
@@ -104,11 +104,12 @@ void CommonEffects::resized()
 {
     int heightFraction = (getHeight() - 120) / 5;
     int widthFraction = getWidth() / 3;
-    const int offSet = 50;
-
+    const int labelHeight = 50;
     const int borderGap = 20;
-    reverbLabel.setBounds(20, 0, widthFraction -40, offSet);
-    delayLabel.setBounds(widthFraction +20, 0, widthFraction -40, 50);
+
+    reverbLabel.setBounds(borderGap, 0, widthFraction -2* borderGap, labelHeight);
+    delayLabel.setBounds(widthFraction + borderGap, 0, widthFraction -2* borderGap, labelHeight);
+    comingSoonLabel.setBounds(2 * widthFraction + borderGap, 0, widthFraction - 2 * borderGap, labelHeight);
 
     roomSlider.setBounds(borderGap, heightFraction, (widthFraction - 2 * borderGap), heightFraction);
     dampingSlider.setBounds(borderGap, heightFraction * 2, (widthFraction - 2 * borderGap), heightFraction);
@@ -120,5 +121,33 @@ void CommonEffects::resized()
     delayFeedback.setBounds(widthFraction + borderGap, heightFraction*2, (widthFraction - 2 * borderGap), heightFraction);
     delayWet.setBounds(widthFraction + borderGap, heightFraction*3, (widthFraction - 2 * borderGap), heightFraction);
 
+}
 
+/*
+Definition of the slider cb function, called when a slider mutates. It distinguishes the origins of the changes
+using references and modifies the related parameters.
+*/
+
+void CommonEffects::sliderValueChanged(juce::Slider* slider) {
+    if (slider == &roomSlider || slider == &dampingSlider || slider == &wetLevelSlider || slider == &dryLevelSlider) {
+        if (onParametersChanged) {
+            juce::Reverb::Parameters params;
+            params.roomSize = roomSlider.getValue();
+            params.damping = dampingSlider.getValue();
+            params.wetLevel = wetLevelSlider.getValue();
+            params.dryLevel = dryLevelSlider.getValue();
+
+            onParametersChanged(params);
+        }
+    }
+    else if (slider == &delayTime || slider == &delayFeedback || slider == &delayWet) {
+        if (onDelayParametersChanged) {
+            DelayParameters params;
+            params.delayTime = delayTime.getValue();
+            params.feedback = delayFeedback.getValue();
+            params.wetLevel = delayWet.getValue();
+
+            onDelayParametersChanged(params);
+        }
+    }
 }

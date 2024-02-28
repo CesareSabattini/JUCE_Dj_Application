@@ -10,7 +10,7 @@ struct AppColours {
     static const juce::Colour customTransparentBlack;
     static const juce::Colour customBlack;
     static const juce::Colour customDarkGrey;
-
+    static const juce::Colour customDarkerGrey;
 };
 
 /*

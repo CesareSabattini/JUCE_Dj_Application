@@ -4,7 +4,8 @@
 AppColours static member variables definition.
 */
 const juce::Colour AppColours::customGrey = juce::Colour(30, 30, 30);
-const juce::Colour AppColours::customDarkGrey = juce::Colour(54, 54, 54);
+const juce::Colour AppColours::customDarkGrey = juce::Colour(50, 50, 50);
+const juce::Colour AppColours::customDarkerGrey = juce::Colour::fromRGB(25, 25, 25);
 const juce::Colour AppColours::customTransparentBlack = juce::Colours::transparentBlack;
 const juce::Colour AppColours::customBlack = juce::Colours::black;
 
@@ -16,11 +17,10 @@ AppLAF::AppLAF() {
     juce::Typeface::Ptr tface = juce::Typeface::createSystemTypefaceFor(BinaryData::AntaRegular_ttf, BinaryData::AntaRegular_ttfSize);
     antaRegular = juce::Font(tface);
 
-    juce::File discFile("C:/Users/cesar/Desktop/disc.png");
-    discImage = juce::ImageFileFormat::loadFrom(discFile);
 
-    juce::File armFile("C:/Users/cesar/Desktop/needle_arm.png");
-    armImage = juce::ImageFileFormat::loadFrom(armFile);
+    discImage = juce::ImageFileFormat::loadFrom(BinaryData::disc_png, BinaryData::disc_pngSize);
+
+    armImage = juce::ImageFileFormat::loadFrom(BinaryData::needle_arm_png, BinaryData::needle_arm_pngSize);
 
 }
 

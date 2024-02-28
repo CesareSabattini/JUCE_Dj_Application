@@ -27,6 +27,8 @@
     </GROUP>
     <FILE id="Y3aVX0" name="Anta-Regular.ttf" compile="0" resource="1"
           file="../../../../../Anta-Regular.ttf"/>
+    <FILE id="A6zdh5" name="disc.png" compile="0" resource="1" file="../../../../../disc.png"/>
+    <FILE id="GaYYEB" name="needle_arm.png" compile="0" resource="1" file="../../../../../needle_arm.png"/>
   </MAINGROUP>
   <MODULES>
     <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
