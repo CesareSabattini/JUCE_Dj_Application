@@ -2,7 +2,7 @@
 #include "Playlist.h"
 
 
-Playlist::Playlist(DjAudioPlayer* audioPlayer) : player{audioPlayer}, chosenTrack("","",0.0,""){
+Playlist::Playlist(std::shared_ptr<DjAudioPlayer> audioPlayer) : player{audioPlayer}, chosenTrack("","",0.0,""){
     loadTracksFromDirectory();
 
    
@@ -32,6 +32,7 @@ Playlist::Playlist(DjAudioPlayer* audioPlayer) : player{audioPlayer}, chosenTrac
 Playlist::~Playlist()
 {
     setLookAndFeel(nullptr);
+
 }
 
 void Playlist::paint (juce::Graphics& g)

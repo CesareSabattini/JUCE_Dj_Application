@@ -1,7 +1,7 @@
 #include "DeckGUI.h"
 
 
-DeckGUI::DeckGUI(DjAudioPlayer* audioPlayer) : djAudioPlayer{ audioPlayer }, playlist(std::make_unique<Playlist>(audioPlayer))
+DeckGUI::DeckGUI(std::shared_ptr<DjAudioPlayer> audioPlayer) : djAudioPlayer{ audioPlayer }, playlist(std::make_unique<Playlist>(audioPlayer))
 {
     
 
@@ -72,25 +72,22 @@ void DeckGUI::buttonClicked(juce::Button* button)
 {
     if (button == &playButton)
     {
-        DBG("start");
         isPlaying = true;
         djAudioPlayer->start();
       
     }
     if (button==&pauseButton) {
-        DBG("pause");
         djAudioPlayer->pause();
         isPlaying = false;
     }
     if (button == &stopButton)
     {
-        DBG("stop");
         djAudioPlayer->stop();
         isPlaying = false;
 
     }
     if (button == &loadButton) {
-        DBG("Load");
+  
         
         playlist->loadTracksFromDirectory();
         playlist->resized();
@@ -130,9 +127,9 @@ void DeckGUI::paint(juce::Graphics& g)
    if(!playlist->isVisible()){
        //definitions of local variables.
         auto bounds = getLocalBounds().toFloat();
-        auto discCentreX = 200;
-        auto discCentreY = bounds.getCentreY() + 50;
-        auto imageCentre = juce::Point<int>(discCentreX, discCentreY);
+        float discCentreX = 200.0f;
+        float discCentreY = static_cast<float>(bounds.getCentreY() + 50);
+        auto imageCentre = juce::Point<float>(discCentreX, discCentreY);
         float radius = discImage->getHeight() / 2.0f;
         juce::Point<float> centre(discCentreX, discCentreY);
         float outerRadius = discImage->getHeight() / 2.0f + 20.0f;
@@ -146,8 +143,8 @@ void DeckGUI::paint(juce::Graphics& g)
         float desiredCentreY = 250.0f;
         float translateX = desiredCentreX - (armImage->getWidth() / 2.0f) - 10;
         float translateY = desiredCentreY - (armImage->getHeight() / 2.0f) + 130;
-        auto thumbnailBounds = juce::Rectangle<int>(10, 40, bounds.getWidth() - 20, 200);
-        auto trackSpecsBounds = juce::Rectangle<int>(10, 10, bounds.getWidth() - 20, 30);
+        auto thumbnailBounds = juce::Rectangle<int>(10, 40, static_cast<int>(bounds.getWidth() - 20), 200);
+        auto trackSpecsBounds = juce::Rectangle<int>(10, 10, static_cast<int>(bounds.getWidth() - 20), 30);
         auto& thumbnail = djAudioPlayer->getThumbnail();
         auto& trackName = playlist->getChosenTrackSpecs();
         auto audioPosition = (float)djAudioPlayer->getTransportSource()->getCurrentPosition();
@@ -191,7 +188,7 @@ void DeckGUI::paint(juce::Graphics& g)
             perform the rotation at each repaint.
             4) Lastly, draw the disc image.
             */
-            g.addTransform(juce::AffineTransform::rotation(rotationAngle, imageCentre.getX(), imageCentre.getY()));
+            g.addTransform(juce::AffineTransform::rotation(rotationAngle, static_cast<int>(imageCentre.getX()), static_cast<int>(imageCentre.getY())));
 
             g.setGradientFill(greyGradient);
             g.fillPath(ringPath);
@@ -208,7 +205,7 @@ void DeckGUI::paint(juce::Graphics& g)
                 g.fillEllipse(ovalCentre.x - 5, ovalCentre.y - 5, 10, 10);
             }
             
-            g.drawImageAt(*discImage.get(), discCentreX - discImage->getWidth() / 2, discCentreY - static_cast<float>(discImage->getHeight()) / 2);
+            g.drawImageAt(*discImage.get(), static_cast<int>( discCentreX - static_cast<float>(discImage->getWidth() / 2)), static_cast<int>( discCentreY - static_cast<float>(discImage->getHeight()) / 2));
             g.restoreState();
 
         }

@@ -26,8 +26,8 @@ private:
     juce::Label otodecksLabel;
     DecksContainer container;
     CommonEffects commonEffects;
-    std::vector<std::unique_ptr<DjAudioPlayer>> players;
-      std::vector<std::unique_ptr<DeckGUI>> deckGUIs;
+    std::vector<std::shared_ptr<DjAudioPlayer>> players;
+      std::vector<std::shared_ptr<DeckGUI>> deckGUIs;
     juce::MixerAudioSource mixer;
     
     juce::TextButton syncButton;

@@ -14,17 +14,19 @@ rightButton("rightButton", juce::Colours::gold, juce::Colours::white, juce::Colo
    setSize(600, 400);
    setAudioChannels(2, 2);
 
-    players.push_back(std::make_unique<DjAudioPlayer>());
-    players.push_back(std::make_unique<DjAudioPlayer>());
-    deckGUIs.push_back(std::make_unique<DeckGUI>(players[0].get()));
-    deckGUIs.push_back(std::make_unique<DeckGUI>(players[1].get()));
+    players.push_back(std::make_shared<DjAudioPlayer>());
+    players.push_back(std::make_shared<DjAudioPlayer>());
+    deckGUIs.push_back(std::make_shared<DeckGUI>(players[0]));
+    deckGUIs.push_back(std::make_shared<DeckGUI>(players[1]));
 
-    mixer.addInputSource(players[0].get(), true);
-    mixer.addInputSource(players[1].get(), true);
 
+    for (auto& player : players) {
+        mixer.addInputSource(player.get(), false);
+    }
     for (auto& deckGUI : deckGUIs)
+
     {
-        container.addDeckGUI(std::move(deckGUI));
+        container.addDeckGUI(deckGUI);
     }
     addAndMakeVisible(container);
 
@@ -144,9 +146,10 @@ rightButton("rightButton", juce::Colours::gold, juce::Colours::white, juce::Colo
 
 MainComponent::~MainComponent()
 {
-    mixer.releaseResources();
+    mixer.removeAllInputs();
+    deckGUIs.clear();
+    players.clear();
     shutdownAudio();
-
 }
 
 void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate)
@@ -166,14 +169,16 @@ void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffer
 
 void MainComponent::releaseResources()
 {
-    for (int i = 0; i < players.size(); i++) {
-        players[i]->releaseResources();
+    mixer.removeAllInputs();
+    for (auto& player : players) {
+        player->stop(); // Assicurati che ogni DjAudioPlayer sia fermato
     }
+    mixer.releaseResources();
 }
 
 void MainComponent::paint(juce::Graphics& g)
 {
-    g.fillAll(juce::Colour(30,30,30));
+    g.fillAll(AppColours::customGrey);
 
 }
 

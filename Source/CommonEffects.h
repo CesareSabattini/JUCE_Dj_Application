@@ -30,7 +30,6 @@ public:
 
 
 private:
-    DjAudioPlayer* djAudioPlayer;
 
     AppLAF appLAF;
     juce::Label reverbLabel;

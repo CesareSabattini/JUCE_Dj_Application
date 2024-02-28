@@ -13,12 +13,17 @@ const juce::Colour AppColours::customBlack = juce::Colours::black;
 
 
 AppLAF::AppLAF() {
+
     
     juce::Typeface::Ptr tface = juce::Typeface::createSystemTypefaceFor(BinaryData::AntaRegular_ttf, BinaryData::AntaRegular_ttfSize);
     antaRegular = juce::Font(tface);
 
 
     discImage = juce::ImageFileFormat::loadFrom(BinaryData::disc_png, BinaryData::disc_pngSize);
+
+
+
+
 
     armImage = juce::ImageFileFormat::loadFrom(BinaryData::needle_arm_png, BinaryData::needle_arm_pngSize);
 
@@ -127,11 +132,11 @@ void AppLAF::drawLinearSlider(juce::Graphics& g, int x, int y, int width, int he
     if (style == juce::Slider::LinearVertical) {
 
         //definitions of the local variables.
-        juce::Rectangle<float> track(x + width / 2 - 2, y, 4, height);
+        juce::Rectangle<float> track(static_cast<float>(x + width / 2 - 2), static_cast<float>( y), 4, static_cast<float>(height));
         const int numMarks = 10;
         const int knobWidth = 20;
         const int knobHeight = 10;
-        juce::Rectangle<float> knob(x + (width - knobWidth) / 2, sliderPos - (knobHeight / 2), knobWidth, knobHeight);
+        juce::Rectangle<float> knob(static_cast<float>(x + (width - knobWidth) / 2), static_cast<float>( sliderPos - (knobHeight / 2)), static_cast<float>(knobWidth), static_cast<float>(knobHeight));
 
         //fill the track
         g.setColour(juce::Colours::darkgrey);
@@ -142,10 +147,10 @@ void AppLAF::drawLinearSlider(juce::Graphics& g, int x, int y, int width, int he
         //draw marks and texts
         g.setColour(juce::Colours::gold);
         for (int i = 0; i <= numMarks; ++i) {
-            float pos = y + (i * height / numMarks);
+            int pos = static_cast<int>(y + (i * height / numMarks));
             g.drawHorizontalLine(pos,static_cast<float>( x + width )/ 2 - 5, static_cast<float>(x + width) / 2 + 5);
             juce::String valueString = juce::String((numMarks - i) * (slider.getMaximum() / numMarks), 0);
-            g.drawText(valueString, x + width / 2 + 10, pos - 10, 30, 20, juce::Justification::centredLeft);
+            g.drawText(valueString, static_cast<int>(x + width / 2 + 10), static_cast<int>(pos - 10), 30, 20, juce::Justification::centredLeft);
         }
 
         // Draw the knob
@@ -156,11 +161,11 @@ void AppLAF::drawLinearSlider(juce::Graphics& g, int x, int y, int width, int he
 
     if (style == juce::Slider::LinearHorizontal) {
         //definitions of the local variables.
-        juce::Rectangle<float> track(x, y + height / 2 - 2, width, 4);
+        juce::Rectangle<float> track(static_cast<float>(x), static_cast<float>(y + height / 2 - 2), static_cast<float>(width), 4);
         const int numMarks = 10;
         const int knobWidth = 10; // Altezza del knob
         const int knobHeight = 20; // Larghezza del knob, maggiore per visibilità orizzontale
-        juce::Rectangle<float> knob(sliderPos - (knobWidth / 2), y + (height - knobHeight) / 2, knobWidth, knobHeight);
+        juce::Rectangle<float> knob(static_cast<float>(sliderPos - (knobWidth / 2)), static_cast<float>(y + (height - knobHeight) / 2), static_cast<float>(knobWidth), static_cast<float>(knobHeight));
 
 
 
@@ -171,8 +176,8 @@ void AppLAF::drawLinearSlider(juce::Graphics& g, int x, int y, int width, int he
         // draw marks and texts
         g.setColour(juce::Colours::gold);
         for (int i = 0; i <= numMarks; ++i) {
-            float pos = x + (i * width / numMarks);
-            g.drawVerticalLine(pos, y + height / 2 - 5, y + height / 2 + 5);          
+            int pos = x + (i * width / numMarks);
+            g.drawVerticalLine(pos, static_cast<int>(y + height / 2 - 5), static_cast<int>(y + height / 2 + 5));
         }
 
       //draw the knob

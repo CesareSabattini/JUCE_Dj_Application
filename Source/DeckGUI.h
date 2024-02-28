@@ -10,7 +10,7 @@ class DeckGUI  : public juce::Component, juce::Slider::Listener, juce::TextEdito
     private juce::Timer
 {
 public:
-    DeckGUI(DjAudioPlayer* audioPlayer);
+    DeckGUI(std::shared_ptr<DjAudioPlayer> audioPlayer);
     ~DeckGUI() override;
     void buttonClicked(juce::Button* button) override;
     void timerCallback() override;
@@ -28,7 +28,7 @@ private:
     const float frameTime = 1.0f / 60.0f;
     bool isPlaying = false;
 
-    DjAudioPlayer* djAudioPlayer;
+    std::shared_ptr<DjAudioPlayer> djAudioPlayer;
 
     AppLAF appLAF;
 

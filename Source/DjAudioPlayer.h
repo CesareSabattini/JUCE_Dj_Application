@@ -48,5 +48,6 @@ false,2};
     float wetLevel = 0.5f;
     double currentSampleRate = 44100;
 
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DjAudioPlayer)
 };

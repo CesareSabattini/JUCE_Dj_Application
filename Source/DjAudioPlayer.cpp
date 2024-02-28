@@ -20,6 +20,9 @@ thumbnail(512, formatManager, thumbnailCache)
 
 DjAudioPlayer::~DjAudioPlayer()
 {
+	thumbnail.setSource(nullptr);
+	transportSource.setSource(nullptr);
+
 }
 
 

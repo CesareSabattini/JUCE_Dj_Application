@@ -20,7 +20,7 @@ class Playlist  : public juce::Component,
 
 {
 public:
-    Playlist(DjAudioPlayer* audio);
+    Playlist(std::shared_ptr<DjAudioPlayer> audioPlayer);
     ~Playlist() override;
 
     void paint (juce::Graphics&) override;
@@ -39,7 +39,7 @@ public:
     Track getChosenTrackSpecs();
 private:
 
-    DjAudioPlayer* player;
+    std::shared_ptr<DjAudioPlayer> player;
     std::unique_ptr<juce::FileChooser> chooser;
     std::unique_ptr<AppLAF> appLAF;
     juce::TableListBox tableComponent;
