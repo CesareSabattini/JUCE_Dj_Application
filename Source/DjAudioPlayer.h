@@ -7,7 +7,7 @@ class DjAudioPlayer  : public juce::AudioSource, juce::ChangeListener
 public:
     DjAudioPlayer();
     ~DjAudioPlayer() override;
-    void changeListenerCallback(juce::ChangeBroadcaster* source);
+    void changeListenerCallback(juce::ChangeBroadcaster*);
     void prepareToPlay(int samplesPerBlockExpected,
         double sampleRate) override;
     void getNextAudioBlock(const juce::AudioSourceChannelInfo&

@@ -69,16 +69,13 @@ void AppLAF::drawButtonBackground(juce::Graphics& g, juce::Button& button,
     const juce::Colour& backgroundColour, bool isMouseOverButton,
     bool isButtonDown) {
     auto buttonBounds = button.getLocalBounds().toFloat();
-    auto cornerRadius = 6.0f; // Raggio degli angoli arrotondati del pulsante
+    auto cornerRadius = 6.0f; 
 
-    // Scegli il colore del pulsante in base allo stato
     auto baseColour = isButtonDown ? juce::Colour(30, 30, 30) : juce::Colours::darkgrey;
     g.setColour(baseColour);
 
-    // Disegna il fondo del pulsante con angoli arrotondati
     g.fillRoundedRectangle(buttonBounds, cornerRadius);
 
-    // Aggiungi un effetto di luce per dare l'impressione che il pulsante sporga
     if (!isButtonDown) {
         juce::ColourGradient gradient(juce::Colour(54, 54, 54), buttonBounds.getX(), buttonBounds.getY(),
             juce::Colour(30, 30, 30), buttonBounds.getX(), buttonBounds.getBottom(), false);
@@ -86,26 +83,23 @@ void AppLAF::drawButtonBackground(juce::Graphics& g, juce::Button& button,
         g.fillRect(buttonBounds);
     }
 
-    // Disegna un bordo argentato lucente
     juce::ColourGradient silverGradient(juce::Colours::white.withAlpha(0.8f), buttonBounds.getX(), buttonBounds.getY(),
         juce::Colours::grey.withAlpha(0.5f), buttonBounds.getX(), buttonBounds.getBottom(), false);
     g.setGradientFill(silverGradient);
-    g.drawRect(buttonBounds.reduced(1.0f), 2.0f); // Usa uno spessore maggiore per un bordo più evidente
+    g.drawRect(buttonBounds.reduced(1.0f), 2.0f);
 
-    // Per un effetto extra lucente, aggiungi un sottile bordo chiaro nella parte superiore del pulsante
     if (!isButtonDown) {
         auto highlightBounds = buttonBounds.reduced(2.0f);
         highlightBounds.removeFromBottom(buttonBounds.getHeight() / 2);
         juce::ColourGradient highlightGradient(juce::Colours::white.withAlpha(0.5f), highlightBounds.getX(), highlightBounds.getY(),
             juce::Colours::transparentWhite, highlightBounds.getX(), highlightBounds.getBottom(), false);
         g.setGradientFill(highlightGradient);
-        g.drawRect(highlightBounds, 1.0f); // Sottile bordo superiore per un effetto lucente
+        g.drawRect(highlightBounds, 1.0f);
     }
 
   
 }
 
-//inherited method to customize a juce::Button component's text.
 
 void AppLAF::drawButtonText(juce::Graphics& g, juce::TextButton& button, bool shouldDrawButtonAsHighlighted, bool shouldDrawButtonAsDown)
 {
@@ -163,8 +157,8 @@ void AppLAF::drawLinearSlider(juce::Graphics& g, int x, int y, int width, int he
         //definitions of the local variables.
         juce::Rectangle<float> track(static_cast<float>(x), static_cast<float>(y + height / 2 - 2), static_cast<float>(width), 4);
         const int numMarks = 10;
-        const int knobWidth = 10; // Altezza del knob
-        const int knobHeight = 20; // Larghezza del knob, maggiore per visibilità orizzontale
+        const int knobWidth = 10;
+        const int knobHeight = 20;
         juce::Rectangle<float> knob(static_cast<float>(sliderPos - (knobWidth / 2)), static_cast<float>(y + (height - knobHeight) / 2), static_cast<float>(knobWidth), static_cast<float>(knobHeight));
 
 
@@ -177,7 +171,7 @@ void AppLAF::drawLinearSlider(juce::Graphics& g, int x, int y, int width, int he
         g.setColour(juce::Colours::gold);
         for (int i = 0; i <= numMarks; ++i) {
             int pos = x + (i * width / numMarks);
-            g.drawVerticalLine(pos, static_cast<int>(y + height / 2 - 5), static_cast<int>(y + height / 2 + 5));
+            g.drawVerticalLine(pos, static_cast<float>(y + height / 2 - 5), static_cast<float>(y + height / 2 + 5));
         }
 
       //draw the knob

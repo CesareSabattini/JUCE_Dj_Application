@@ -12,8 +12,8 @@ thumbnail(512, formatManager, thumbnailCache)
 	//default reverb params
 	reverbParams.roomSize = 0.5;
 	reverbParams.damping = 0.5;
-	reverbParams.wetLevel = 0.33;
-	reverbParams.dryLevel = 0.4;
+	reverbParams.wetLevel = (float)0.3;
+	reverbParams.dryLevel = (float)0.4;
 	reverb.setParameters(reverbParams);
 }
 
@@ -31,7 +31,6 @@ void DjAudioPlayer::prepareToPlay(int samplesPerBlockExpected,
 {
 
 	jassert(sampleRate > 0);
-
 	currentSampleRate = sampleRate;
 
 	/*
@@ -52,9 +51,9 @@ void DjAudioPlayer::prepareToPlay(int samplesPerBlockExpected,
 	*/
 	delayLine.prepare(spec);
 	auto maxDelayTimeInSamples = sampleRate * (2000.0f / 1000.0f);
-	delayLine.setMaximumDelayInSamples(maxDelayTimeInSamples);
+	delayLine.setMaximumDelayInSamples((int)maxDelayTimeInSamples);
 	auto delayTimeInSamples = currentSampleRate * (500.0f / 1000.0);
-	delayLine.setDelay(delayTimeInSamples);
+	delayLine.setDelay(static_cast<float>(delayTimeInSamples));
 
 	/*
 	Pass audio parameters to the transportSource and the resampleSource.
@@ -122,7 +121,7 @@ void DjAudioPlayer::setGain(double gain)
 
 	}
 	else {
-		transportSource.setGain(gain);
+		transportSource.setGain(static_cast<float>(gain));
 	}
 }
 
@@ -196,7 +195,7 @@ void DjAudioPlayer::pause(void)
 	transportSource.stop();
 }
 
-void DjAudioPlayer::changeListenerCallback(juce::ChangeBroadcaster* source) {
+void DjAudioPlayer::changeListenerCallback(juce::ChangeBroadcaster* ) {
 
 }
 
@@ -235,7 +234,7 @@ void DjAudioPlayer::applyDelay(juce::AudioBuffer<float>& buffer, int numSamples)
 
 		for (int i = 0; i < numSamples; ++i) {
 			const float in = channelData[i];
-			float out = delayLine.popSample(channel, delayTime * currentSampleRate / 1000.0f, true);
+			float out = delayLine.popSample(channel,static_cast<float>( delayTime * currentSampleRate / 1000.0f), true);
 			delayLine.pushSample(channel, in + out * feedback);
 			channelData[i] = in * (1.0f - wetLevel) + out * wetLevel;
 		}

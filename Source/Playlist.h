@@ -36,7 +36,7 @@ public:
     bool isInterestedInFileDrag(const juce::StringArray& files) override;
     void filesDropped(const juce::StringArray& files, int x, int y) override;
 
-    Track getChosenTrackSpecs();
+    Track& getChosenTrackSpecs();
 private:
 
     std::shared_ptr<DjAudioPlayer> player;

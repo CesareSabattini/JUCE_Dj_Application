@@ -89,23 +89,85 @@ CommonEffects::CommonEffects()
     delayWet.setTextBoxStyle(juce::Slider::TextBoxLeft, true, 45, 30);
 
 
+    addAndMakeVisible(roomLabel);
+    roomLabel.setText("Room", juce::dontSendNotification);
+    roomLabel.setJustificationType(juce::Justification::centred);
+    roomLabel.setColour(juce::Label::outlineColourId, juce::Colours::silver);
+    roomLabel.setColour(juce::Label::textColourId, juce::Colours::gold);
+
+
+
+    addAndMakeVisible(dampingLabel);
+    dampingLabel.setText("Damping", juce::dontSendNotification);
+    dampingLabel.setJustificationType(juce::Justification::centred);
+    dampingLabel.setColour(juce::Label::outlineColourId, juce::Colours::silver);
+    dampingLabel.setColour(juce::Label::textColourId, juce::Colours::gold);
+
+
+    addAndMakeVisible(wetLabel);
+    wetLabel.setText("Wet", juce::dontSendNotification);
+    wetLabel.setJustificationType(juce::Justification::centred);
+    wetLabel.setColour(juce::Label::outlineColourId, juce::Colours::silver);
+    wetLabel.setColour(juce::Label::textColourId, juce::Colours::gold);
+
+
+    addAndMakeVisible(dryLabel);
+    dryLabel.setText("Dry", juce::dontSendNotification);
+    dryLabel.setJustificationType(juce::Justification::centred);
+    dryLabel.setColour(juce::Label::outlineColourId, juce::Colours::silver);
+    dryLabel.setColour(juce::Label::textColourId, juce::Colours::gold);
+
+
+
+    addAndMakeVisible(widthLabel);
+    widthLabel.setText("Width", juce::dontSendNotification);
+    widthLabel.setJustificationType(juce::Justification::centred);
+    widthLabel.setColour(juce::Label::outlineColourId, juce::Colours::silver);
+    widthLabel.setColour(juce::Label::textColourId, juce::Colours::gold);
+
+
+
+    addAndMakeVisible(delayTimeLabel);
+    delayTimeLabel.setText("Time", juce::dontSendNotification);
+    delayTimeLabel.setJustificationType(juce::Justification::centred);
+    delayTimeLabel.setColour(juce::Label::outlineColourId, juce::Colours::silver);
+    delayTimeLabel.setColour(juce::Label::textColourId, juce::Colours::gold);
+
+
+    addAndMakeVisible(delayFbLabel);
+    delayFbLabel.setText("Feedback", juce::dontSendNotification);
+    delayFbLabel.setJustificationType(juce::Justification::centred);
+    delayFbLabel.setColour(juce::Label::outlineColourId, juce::Colours::silver);
+    delayFbLabel.setColour(juce::Label::textColourId, juce::Colours::gold);
+
+
+
+    addAndMakeVisible(delayWetLabel);
+    delayWetLabel.setText("Wet", juce::dontSendNotification);
+    delayWetLabel.setJustificationType(juce::Justification::centred);
+    delayWetLabel.setColour(juce::Label::outlineColourId, juce::Colours::silver);
+    delayWetLabel.setColour(juce::Label::textColourId, juce::Colours::gold);
+
+
+
 }
 
 CommonEffects::~CommonEffects()
 {
 }
 
-void CommonEffects::paint (juce::Graphics& g)
+void CommonEffects::paint (juce::Graphics&)
 {
 
 }
 
 void CommonEffects::resized()
 {
-    int heightFraction = (getHeight() - 120) / 5;
+    int heightFraction = getHeight() / 6;
     int widthFraction = getWidth() / 3;
-    const int labelHeight = 50;
-    const int borderGap = 20;
+    const int labelHeight = getHeight()/9;
+    const int borderGap = getWidth()/40;
+
 
     reverbLabel.setBounds(borderGap, 0, widthFraction -2* borderGap, labelHeight);
     delayLabel.setBounds(widthFraction + borderGap, 0, widthFraction -2* borderGap, labelHeight);
@@ -121,6 +183,19 @@ void CommonEffects::resized()
     delayFeedback.setBounds(widthFraction + borderGap, heightFraction*2, (widthFraction - 2 * borderGap), heightFraction);
     delayWet.setBounds(widthFraction + borderGap, heightFraction*3, (widthFraction - 2 * borderGap), heightFraction);
 
+    const int labelWidth = roomSlider.getBounds().getWidth() / 2;
+
+    roomLabel.setBounds(getBounds().getWidth() / 6 -labelWidth/2, heightFraction - 10, labelWidth, heightFraction / 3);
+    dampingLabel.setBounds(getBounds().getWidth() / 6 - labelWidth / 2, 2*heightFraction-10, labelWidth, heightFraction / 3);
+    wetLabel.setBounds(getBounds().getWidth() / 6 - labelWidth / 2, 3*heightFraction-10, labelWidth, heightFraction / 3);
+    dryLabel.setBounds(getBounds().getWidth() / 6 - labelWidth / 2, 4*heightFraction-10, labelWidth, heightFraction / 3);
+    widthLabel.setBounds(getBounds().getWidth() / 6 - labelWidth / 2, 5*heightFraction-10, labelWidth, heightFraction / 3);
+
+    delayTimeLabel.setBounds(getBounds().getWidth() / 2 - labelWidth / 2, heightFraction-10, labelWidth, heightFraction / 3);
+    delayFbLabel.setBounds(getBounds().getWidth() / 2 - labelWidth / 2, 2 * heightFraction-10, labelWidth, heightFraction / 3);
+    delayWetLabel.setBounds(getBounds().getWidth() / 2 - labelWidth / 2, 3 * heightFraction-10, labelWidth, heightFraction / 3);
+
+
 }
 
 /*
@@ -132,10 +207,10 @@ void CommonEffects::sliderValueChanged(juce::Slider* slider) {
     if (slider == &roomSlider || slider == &dampingSlider || slider == &wetLevelSlider || slider == &dryLevelSlider) {
         if (onParametersChanged) {
             juce::Reverb::Parameters params;
-            params.roomSize = roomSlider.getValue();
-            params.damping = dampingSlider.getValue();
-            params.wetLevel = wetLevelSlider.getValue();
-            params.dryLevel = dryLevelSlider.getValue();
+            params.roomSize = static_cast<float>(roomSlider.getValue());
+            params.damping = static_cast<float>(dampingSlider.getValue());
+            params.wetLevel = static_cast<float>(wetLevelSlider.getValue());
+            params.dryLevel = static_cast<float>(dryLevelSlider.getValue());
 
             onParametersChanged(params);
         }
@@ -143,9 +218,9 @@ void CommonEffects::sliderValueChanged(juce::Slider* slider) {
     else if (slider == &delayTime || slider == &delayFeedback || slider == &delayWet) {
         if (onDelayParametersChanged) {
             DelayParameters params;
-            params.delayTime = delayTime.getValue();
-            params.feedback = delayFeedback.getValue();
-            params.wetLevel = delayWet.getValue();
+            params.delayTime = static_cast<float>(delayTime.getValue());
+            params.feedback = static_cast<float>(delayFeedback.getValue());
+            params.wetLevel = static_cast<float>(delayWet.getValue());
 
             onDelayParametersChanged(params);
         }

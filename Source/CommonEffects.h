@@ -43,9 +43,20 @@ private:
     juce::Slider dryLevelSlider;
     juce::Slider widthSlider;
 
+    juce::Label roomLabel;
+    juce::Label dampingLabel;
+    juce::Label wetLabel;
+    juce::Label dryLabel;
+    juce::Label widthLabel;
+
+
     juce::Slider delayTime;
     juce::Slider delayFeedback;
     juce::Slider delayWet;
+
+    juce::Label delayTimeLabel;
+    juce::Label delayFbLabel;
+    juce::Label delayWetLabel;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (CommonEffects)
 };

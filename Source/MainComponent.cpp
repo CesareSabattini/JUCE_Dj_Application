@@ -46,9 +46,6 @@ rightButton("rightButton", juce::Colours::gold, juce::Colours::white, juce::Colo
     otodecksLabel.setJustificationType(juce::Justification::centred);
     addAndMakeVisible(otodecksLabel);
 
-    syncButton.setButtonText("Sync");
-    addAndMakeVisible(syncButton);
-    syncButton.setLookAndFeel(&appLAF);
 
     playButton.setButtonText("Play");
     playButton.onClick = [this] {
@@ -171,7 +168,7 @@ void MainComponent::releaseResources()
 {
     mixer.removeAllInputs();
     for (auto& player : players) {
-        player->stop(); // Assicurati che ogni DjAudioPlayer sia fermato
+        player->stop();
     }
     mixer.releaseResources();
 }
@@ -184,22 +181,21 @@ void MainComponent::paint(juce::Graphics& g)
 
 void MainComponent::resized()
 {
-    const int topGap = 140;
+    const int topGap = getHeight()/5;
     const int littleGap = 10;
     const int middleGap = 15;
     const int wideGap = 20;
-    const int inBetweenWidth = 250;
-    const int labelWidth = 210;
-    const int labelHeight = 80;
+    const int inBetweenWidth = getWidth()/6;
+    const int labelWidth = inBetweenWidth-2*middleGap;
+    const int labelHeight = topGap/2;
     const int buttonHeight = 60;
     const int shapeButtonWidth = 25;
     const int shapeButtonHeight= 25;
-    const int viewportY = 340;
+    const int viewportY = getBounds().getCentreY()*5/6;
 
-    otodecksLabel.setBounds((getWidth()- inBetweenWidth)/2+ wideGap, wideGap, labelWidth, labelHeight);
+    otodecksLabel.setBounds((getWidth()- inBetweenWidth)/2+ wideGap,2*wideGap, labelWidth, labelHeight);
     container.setBounds(0, 0,getWidth(), getHeight());
-    syncButton.setBounds((getWidth() - inBetweenWidth) / 2 + middleGap,topGap, (inBetweenWidth - 3 * middleGap)/2, buttonHeight);
-    playButton.setBounds(syncButton.getRight() + middleGap,topGap, (inBetweenWidth - 3 * middleGap) / 2, buttonHeight);
+    playButton.setBounds((getWidth() - inBetweenWidth) / 2 + middleGap,topGap, inBetweenWidth - 2* middleGap, buttonHeight);
     pauseButton.setBounds((getWidth() - inBetweenWidth) / 2 + middleGap, playButton.getBottom() + middleGap, (inBetweenWidth - 3 * middleGap) / 2, buttonHeight);
     stopButton.setBounds(pauseButton.getRight() + middleGap, playButton.getBottom() + middleGap, (inBetweenWidth - 3 * middleGap) / 2, buttonHeight);
 

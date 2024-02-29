@@ -46,6 +46,11 @@ private:
     juce::Slider volSlider;
     juce::Slider speedSlider;
     juce::Slider posSlider;
+    
+    juce::Label volLabel;
+    juce::Label speedLabel;
+    juce::Label posLabel;
+
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DeckGUI)
 };

@@ -4,7 +4,7 @@
 
 Playlist::Playlist(std::shared_ptr<DjAudioPlayer> audioPlayer) : player{audioPlayer}, chosenTrack("","",0.0,""){
     loadTracksFromDirectory();
-
+    appLAF = std::make_unique<AppLAF>();
    
         addTrackButton.setButtonText("+");
         addTrackButton.onClick = [this] { addTrack(); };
@@ -35,7 +35,7 @@ Playlist::~Playlist()
 
 }
 
-void Playlist::paint (juce::Graphics& g)
+void Playlist::paint (juce::Graphics&)
 {
 }
 
@@ -87,25 +87,25 @@ void Playlist::resized() {
     auto area = getLocalBounds();
 
 
-    closeButton.setBounds(getX() + borderGap, borderGap, buttonWidth, buttonHeight);
-    addTrackButton.setBounds(getRight()-borderGap-buttonWidth, borderGap, buttonWidth, buttonHeight);
+    closeButton.setBounds(getBounds().getCentreX()+buttonWidth, borderGap, buttonWidth, buttonHeight);
+    addTrackButton.setBounds(getBounds().getCentreX() - 2.5f*buttonWidth, borderGap, buttonWidth, buttonHeight);
     tableComponent.setBounds(area.reduced(3*borderGap));
 }
 
 
 int Playlist::getNumRows()
 {
-    return tracks.size();
+    return static_cast<int>(tracks.size());
 }
 
-void Playlist::paintRowBackground(juce::Graphics& g, int rowNumber, int width, int height, bool rowIsSelected)  {
+void Playlist::paintRowBackground(juce::Graphics& g, int, int width, int height, bool rowIsSelected)  {
     if (rowIsSelected){ g.fillAll(juce::Colours::lightblue); }
     else{ g.fillAll(juce::Colours::darkgrey); }
     g.setColour(juce::Colours::gold);
-    g.drawLine(0, height - 1, width, height - 1, 1);
+    g.drawLine(0.0f, static_cast<float>(height - 1), static_cast<float>(width), static_cast<float>(height - 1.0f), 1.0f);
 }
 
-void Playlist::paintCell(juce::Graphics& g, int rowNumber, int columnId, int width, int height, bool rowIsSelected)  {
+void Playlist::paintCell(juce::Graphics& g, int rowNumber, int columnId, int width, int height, bool)  {
     if (rowNumber < 0 || rowNumber >= tracks.size()) return;
 
     auto& track = tracks[rowNumber];
@@ -165,13 +165,13 @@ void Playlist::selectedRowsChanged(int lastRowSelected) {
 /*
 Definitions of the pure virtual method of juce::FileDragAndDropTarget class.
 */
-bool Playlist::isInterestedInFileDrag(const juce::StringArray& files){
+bool Playlist::isInterestedInFileDrag(const juce::StringArray&){
     return true;
 }
 /*
 After a file is dropped a procedure similiar to the one followed in the addTrack method, is exhecuted.
 */
-void Playlist::filesDropped(const juce::StringArray& files, int x, int y){
+void Playlist::filesDropped(const juce::StringArray& files, int, int){
     for (const auto& file : files) {
         juce::File audioFile(file);
         if (audioFile.existsAsFile()) {
@@ -192,6 +192,6 @@ void Playlist::filesDropped(const juce::StringArray& files, int x, int y){
     }
 }
 
-Track Playlist::getChosenTrackSpecs() {
+Track& Playlist::getChosenTrackSpecs() {
     return chosenTrack;
 }

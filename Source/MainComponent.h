@@ -30,7 +30,6 @@ private:
       std::vector<std::shared_ptr<DeckGUI>> deckGUIs;
     juce::MixerAudioSource mixer;
     
-    juce::TextButton syncButton;
     juce::TextButton playButton;
     juce::TextButton pauseButton;
     juce::TextButton stopButton;
