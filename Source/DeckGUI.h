@@ -1,25 +1,26 @@
 #pragma once
 
+#include "AppStyle.h"
+#include "DjAudioPlayer.h"
+#include "Playlist.h"
 #include <JuceHeader.h>
-#include"AppStyle.h"
-#include"DjAudioPlayer.h"
-#include"Playlist.h"
 
-
-class DeckGUI  : public juce::Component, juce::Slider::Listener, juce::TextEditor::Listener, juce::Button::Listener,
-    private juce::Timer
-{
-public:
+class DeckGUI : public juce::Component,
+                juce::Slider::Listener,
+                juce::TextEditor::Listener,
+                juce::Button::Listener,
+                private juce::Timer {
+  public:
     DeckGUI(std::shared_ptr<DjAudioPlayer> audioPlayer);
     ~DeckGUI() override;
-    void buttonClicked(juce::Button* button) override;
+    void buttonClicked(juce::Button *button) override;
     void timerCallback() override;
-    void sliderValueChanged(juce::Slider* slider) override;
+    void sliderValueChanged(juce::Slider *slider) override;
     void showPlaylist();
-    void paint (juce::Graphics&) override;
+    void paint(juce::Graphics &) override;
     void resized() override;
 
-private:
+  private:
     /*
     Pay attention to the initialization order.
     */
@@ -33,11 +34,10 @@ private:
     AppLAF appLAF;
 
     std::unique_ptr<Playlist> playlist;
-    
+
     std::unique_ptr<juce::Image> discImage;
     std::unique_ptr<juce::Image> armImage;
 
-   
     juce::TextButton playButton;
     juce::TextButton pauseButton;
     juce::TextButton stopButton;
@@ -46,11 +46,10 @@ private:
     juce::Slider volSlider;
     juce::Slider speedSlider;
     juce::Slider posSlider;
-    
+
     juce::Label volLabel;
     juce::Label speedLabel;
     juce::Label posLabel;
 
-
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DeckGUI)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DeckGUI)
 };
