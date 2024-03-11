@@ -3,12 +3,12 @@ Dj application entirely coded in C++, with JUCE Framework.
 
 ## Features
 - Multitrack synchronous playing.
-- -Audio files loading from device, and local files storage
+- Audio files loading from device, and local files storage
 - Reverb and delay effects with adjustable parameters, integrating JUCE DSP modules. 
 - Gain, speed and position modulation. 
 - Dynamic GUI with advanced LookAndFeel customization. 
 
-<img src="https://github.com/CesareSabattini/Otodecks/assets/133495960/1981dcad-5ccc-489d-973b-4389a9927672"/>
+![Screenshot 2024-03-11 194327](https://github.com/CesareSabattini/JUCE_Dj_Application/assets/133495960/294820b6-51e9-4659-8a4d-f39e78aa4518)
 
 ## C++ principles
 On the C++ technical side, the application implementation involved:
